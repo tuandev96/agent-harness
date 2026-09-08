@@ -1,0 +1,42 @@
+# Secrets
+.credentials.yaml*
+.anonymous-user-id
+**/tokens.json
+
+# Personal / runtime (never commit a ~/.dsh dump)
+settings.yaml
+settings.yaml.bak*
+mcp-servers.json
+guardian-ledger.jsonl
+profiles/
+erpipe-proxy/
+sessions/
+attachments/
+storages/
+*.log
+/sessions-repair-backup-*/
+/.backup-*/
+/.evidence/
+/engram-relay/
+/super-injector/
+/router-standard/
+
+# Personal memory notes; keep INDEX.md only
+memory/*
+!memory/INDEX.md
+
+# Dependencies
+node_modules/
+vendor/*
+!vendor/dsh-mcp-settings/
+!vendor/dsh-mcp-settings/**
+!vendor/dsh-tool-arg-coerce/
+!vendor/dsh-tool-arg-coerce/**
+!vendor/dsh-replay-dedup/
+!vendor/dsh-replay-dedup/**
+vendor/dsh-mcp-settings/screenshots/
+vendor/**/node_modules/
+vendor/**/*.tgz
+vendor/**/docs/verify-*.html
+
+.DS_Store

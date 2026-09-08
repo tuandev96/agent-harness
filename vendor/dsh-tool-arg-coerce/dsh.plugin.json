@@ -1,0 +1,13 @@
+{
+  "id": "@dsh-external/dsh-tool-arg-coerce",
+  "version": "0.1.0",
+  "main": "./lib/index.js",
+  "description": "Coerce glob/grep mis-keyed description into pattern; enrich INVALID_ARGS with received keys.",
+  "engines": {
+    "dsh": ">=0.0.1"
+  },
+  "contributes": {
+    "tools": [],
+    "skills": []
+  }
+}

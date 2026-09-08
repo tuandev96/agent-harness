@@ -1,0 +1,6 @@
+# Settings → MCP. One manager plugin; each saved server is mounted
+# at runtime as @deepseek-ai/dsh-mcp-client (not a loader row per server).
+- insert:
+    - id: dsh-mcp-settings
+      name: '@dsh-external/dsh-mcp-settings'
+      config: {}

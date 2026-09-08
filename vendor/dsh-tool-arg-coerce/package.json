@@ -1,0 +1,25 @@
+{
+  "name": "@dsh-external/dsh-tool-arg-coerce",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Coerce glob/grep description→pattern and echo received keys on INVALID_ARGS so Gemini Flash cannot loop on missing pattern.",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml"
+  ],
+  "license": "MIT",
+  "engines": {
+    "dsh": ">=0.0.1-rc"
+  }
+}

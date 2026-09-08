@@ -1,0 +1,8 @@
+{
+  "_comment": "dsh-guardian 本地规则文件（可手动编辑）。blacklist=黑名单，graylist=灰名单，expectedOwners=归属核对表（包名 → 期望的 npm 作者/org，用于抓『标注和户口本对不上』的冒名/改包）。",
+  "blacklist": [],
+  "graylist": [],
+  "expectedOwners": {
+    "dsh-plugin-check": "stimQQ"
+  }
+}

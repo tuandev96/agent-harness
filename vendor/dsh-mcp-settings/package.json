@@ -1,0 +1,37 @@
+{
+  "name": "@dsh-external/dsh-mcp-settings",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Settings → MCP: list, add, edit, enable MCP servers and live-mount @deepseek-ai/dsh-mcp-client",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": ">=4.0.0-rc <5",
+    "@deepseek-ai/dsh-mcp-client": ">=0.1.0-alpha <2",
+    "react": "^18.2.0"
+  }
+}

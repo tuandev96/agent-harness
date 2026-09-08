@@ -1,0 +1,5 @@
+# Host-plane: coerce glob/grep args before validate; enrich INVALID_ARGS.
+- insert:
+    - id: dsh-tool-arg-coerce
+      name: '@dsh-external/dsh-tool-arg-coerce'
+      config: {}
