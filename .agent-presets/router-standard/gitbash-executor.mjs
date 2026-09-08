@@ -1,15 +1,4 @@
-/**
- * gitbash-executor — Git for Windows (MSYS) bash as a preset shell service (win32).
- *
- * 机制参照 [liceses/dsh-gitbash-preset](https://github.com/liceses/dsh-gitbash-preset)（MIT）：
- * host 组合在 win32 只装配 pwsh 的 shell seam（dsh-base disabled bash-sandbox），
- * 本行在预设内以 isolate realm 提供私有 `shell` 服务 + 同组 `tool-bash`，
- * 让 Windows 上拿到真正的 Git Bash（<gitBash> -lc <command> 每次新 shell，无 PTY 持久会话）。
- *
- * 诚实边界（不绕过沙箱）：MSYS 运行时无法在 Windows 受限令牌内启动（信号管道限制）——
- * 执行器不声明 sandboxMode（tool-bash 因此不做策略检查），限制由工具描述/阶段指引说明：
- * workspace-write（或更窄）下 bash 启动可能失败，按指引做单次 danger-full-access 升级。
- */
+/** Git Bash preset adapter. Subprocess/approval enforcement remains host-owned. */
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
@@ -17,100 +6,76 @@ import { existsSync } from 'node:fs'
 export const name = 'gitbash-executor'
 export const inject = ['subprocess']
 
-/** Git Bash 探测：GIT_BASH env → 常见安装目录 → PATH 兜底 'bash'（bootstrap 已前置 Git bin）。 */
 export function gitBashPath(config = {}) {
   const env = config.shellPath || process.env.GIT_BASH
   if (env && existsSync(env)) return env
-  const pf = process.env['ProgramFiles'] || 'C:\\Program Files'
+  const pf = process.env.ProgramFiles || 'C:\\Program Files'
   const pf86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)'
-  const la = process.env['LOCALAPPDATA'] || join(homedir(), 'AppData\\Local')
-  for (const p of [
-    join(pf, 'Git\\bin\\bash.exe'),
-    join(pf, 'Git\\usr\\bin\\bash.exe'),
-    join(pf86, 'Git\\bin\\bash.exe'),
-    join(la, 'Programs\\Git\\bin\\bash.exe'),
-  ]) if (existsSync(p)) return p
-  return 'bash' // PATH 兜底
+  const la = process.env.LOCALAPPDATA || join(homedir(), 'AppData\\Local')
+  for (const path of [join(pf,'Git\\bin\\bash.exe'), join(pf,'Git\\usr\\bin\\bash.exe'),
+    join(pf86,'Git\\bin\\bash.exe'), join(la,'Programs\\Git\\bin\\bash.exe')]) {
+    if (existsSync(path)) return path
+  }
+  return 'bash'
+}
+
+function positive(value, fallback, maximum) {
+  const n = value === undefined ? fallback : Number(value)
+  if (!Number.isFinite(n) || n <= 0) throw new Error('execution limits must be positive finite numbers')
+  return Math.min(maximum, Math.floor(n))
+}
+
+function cancellation(spec) {
+  const controller = new AbortController()
+  let cause = null
+  const abort = reason => { if (!cause) { cause=reason; controller.abort(new Error(reason)) } }
+  const onCancel = () => abort('CANCELLED')
+  if (spec.signal?.aborted) onCancel()
+  else spec.signal?.addEventListener('abort',onCancel,{once:true})
+  const timer = setTimeout(()=>abort('TIMED_OUT'),positive(spec.timeoutMs,120000,600000))
+  return {signal:controller.signal, cause:()=>cause,
+    dispose() { clearTimeout(timer); spec.signal?.removeEventListener('abort',onCancel) }}
 }
 
 export function apply(ctx, config = {}) {
-  const defaultTimeout = Number(config.timeoutMs || 120000)
-  const defaultMaxOutput = Number(config.maxOutputBytes || 256 * 1024)
   const bashPath = gitBashPath(config)
-
-  const finalOutput = (reader) => {
-    try {
-      const r = reader?.readFrom?.(0)
-      return { text: (r && (r.text || '')) || '', truncated: Boolean(r?.truncated), spillPath: r?.spillPath }
-    } catch { return { text: '', truncated: false } }
+  const finalOutput = reader => {
+    const result = reader?.readFrom?.(0)
+    return {text:result?.text || '',truncated:Boolean(result?.truncated),spillPath:result?.spillPath}
   }
-  const mkSpec = (request) => {
-    const timeoutMs = Math.min(600000, Number(request?.timeoutMs || defaultTimeout))
-    const stdoutMaxBytes = Math.min(4 * 1024 * 1024, Number(request?.stdoutMaxBytes || defaultMaxOutput))
-    return {
-      command: String(request?.command || ''),
-      workdir: request?.workdir || process.cwd(),
-      timeoutMs,
-      stdoutMaxBytes,
-      ...request?.signal !== void 0 ? { signal: request.signal } : {},
-    }
-  }
-
+  const spawn = (spec, signal) => ctx.subprocess.spawn({
+    argv:[bashPath,'-lc',spec.command],cwd:spec.workdir,
+    stdio:{stdin:'ignore',
+      stdout:{maxBytes:spec.stdoutMaxBytes,spill:{maxBytes:spec.stdoutMaxBytes*2}},
+      stderr:{maxBytes:spec.stdoutMaxBytes,spill:{maxBytes:spec.stdoutMaxBytes*2}}},
+    graceMs:3000,signal,
+  })
   const shell = {
-    // 不声明 sandboxMode：Git Bash（MSYS）在受限令牌内无法启动——限制由指引说明，不做策略伪装
-    resolve(request) { return mkSpec(request) },
+    // No claim of sandbox enforcement here. Host capability conformance is required.
+    resolve(request) {
+      return {command:String(request?.command || ''),workdir:request?.workdir || process.cwd(),
+        timeoutMs:positive(request?.timeoutMs,config.timeoutMs ?? 120000,600000),
+        stdoutMaxBytes:positive(request?.stdoutMaxBytes,config.maxOutputBytes ?? 262144,4194304),
+        ...(request?.signal ? {signal:request.signal} : {})}
+    },
     async run(spec) {
-      const ac = new AbortController()
-      const timer = setTimeout(() => ac.abort(), spec.timeoutMs)
-      let outcome
-      let outReader
-      let errReader
-      let spawnError = ''
-      try {
-        const handle = ctx.subprocess.spawn({
-          argv: [bashPath, '-lc', spec.command],
-          cwd: spec.workdir,
-          stdio: {
-            stdin: 'ignore',
-            stdout: { maxBytes: spec.stdoutMaxBytes, spill: { maxBytes: spec.stdoutMaxBytes * 2 } },
-            stderr: { maxBytes: spec.stdoutMaxBytes, spill: { maxBytes: spec.stdoutMaxBytes * 2 } },
-          },
-          graceMs: 3000,
-          signal: spec.signal || ac.signal,
-        })
-        outcome = await handle.done
-        outReader = handle.collected?.stdout
-        errReader = handle.collected?.stderr
-      } catch (e) {
-        spawnError = (e && e.message) || String(e)
-      } finally { clearTimeout(timer) }
-      const timedOut = ac.signal.aborted
-      return {
-        exitCode: Number(outcome?.exitCode ?? outcome?.code ?? -1),
-        signal: outcome?.signal ?? null,
-        timedOut,
-        aborted: spawnError !== '' ? true : ac.signal.aborted && !timedOut,
-        timeoutMs: spec.timeoutMs,
-        stdout: finalOutput(outReader),
-        stderr: finalOutput(errReader),
-        ...spawnError ? { spawnError } : {},
-      }
+      const cancel=cancellation(spec)
+      let handle, outcome, spawnError=''
+      try { handle=spawn(spec,cancel.signal); outcome=await handle.done }
+      catch(error) { spawnError=error instanceof Error ? error.message : String(error) }
+      finally { cancel.dispose() }
+      return {exitCode:Number(outcome?.exitCode ?? outcome?.code ?? -1),signal:outcome?.signal ?? null,
+        timedOut:cancel.cause()==='TIMED_OUT',aborted:cancel.cause()==='CANCELLED' || Boolean(spawnError),
+        timeoutMs:spec.timeoutMs,stdout:finalOutput(handle?.collected?.stdout),stderr:finalOutput(handle?.collected?.stderr),
+        ...(spawnError ? {spawnError} : {})}
     },
     start(spec) {
-      const handle = ctx.subprocess.spawn({
-        argv: [bashPath, '-lc', spec.command],
-        cwd: spec.workdir,
-        stdio: {
-          stdin: 'ignore',
-          stdout: { maxBytes: spec.stdoutMaxBytes, spill: { maxBytes: spec.stdoutMaxBytes * 2 } },
-          stderr: { maxBytes: spec.stdoutMaxBytes, spill: { maxBytes: spec.stdoutMaxBytes * 2 } },
-        },
-        graceMs: 3000,
-        signal: spec.signal,
-      })
-      return { done: handle.done, pid: handle.pid, collected: handle.collected }
+      const cancel=cancellation(spec)
+      try {
+        const handle=spawn(spec,cancel.signal)
+        return {done:handle.done.finally(()=>cancel.dispose()),pid:handle.pid,collected:handle.collected}
+      } catch(error) { cancel.dispose(); throw error }
     },
   }
-
-  ctx.provide('shell', shell)
+  ctx.provide('shell',shell)
 }

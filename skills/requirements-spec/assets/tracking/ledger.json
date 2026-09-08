@@ -1,0 +1,40 @@
+{
+  "record_kind": "TEMPLATE_NOT_LEDGER",
+  "format_version": 1,
+  "contract_id": "requirements-tracking/1",
+  "mode": "TEMPLATE",
+  "updated_at": null,
+  "baseline_ref": null,
+  "framework_policy": null,
+  "execution_context": {
+    "candidate": null,
+    "profile_ids": []
+  },
+  "coordination": {
+    "mode": "MANUAL_SINGLE_WRITER",
+    "state": "UNASSIGNED",
+    "writer_id": null,
+    "writer_session_id": null,
+    "writer_epoch": 0,
+    "assignment_ref": null
+  },
+  "publication": null,
+  "automation": {
+    "evaluator_implemented": false,
+    "ci_enforced": false
+  },
+  "work_plans": [],
+  "requirements": [],
+  "acceptance_criteria": [],
+  "quality_requirements": [],
+  "assessment": {
+    "status_source": "SEED",
+    "computed": false,
+    "evaluated_at": null,
+    "evaluation_ref": null,
+    "release_ready": false,
+    "reason_codes": [
+      "TEMPLATE_NOT_INITIALIZED"
+    ]
+  }
+}

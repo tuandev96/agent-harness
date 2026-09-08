@@ -491,93 +491,9 @@ function isMutatingDev(name, args) {
   return name === 'write' || name === 'edit'
 }
 
-export async function deliveryCheck(ctx, args) {
-  const file = String(args?.file || '').trim()
-  const checks = []
-  if (!file) return { ok: false, checks: [{ name: 'file-path', pass: false, detail: 'missing file parameter' }] }
-  try {
-    const st = statSync(file)
-    checks.push({ name: 'file-exists', pass: true, detail: `${file} (${st.size} bytes, mtime ${st.mtime.toISOString()})` })
-    checks.push(st.size > 0
-      ? { name: 'file-nonempty', pass: true, detail: `${st.size} bytes` }
-      : { name: 'file-nonempty', pass: false, detail: 'file is 0 bytes' })
-  } catch (e) {
-    return { ok: false, checks: [...checks, { name: 'file-exists', pass: false, detail: String((e && e.message) || e) }] }
-  }
-  try {
-    const head = readFileSync(file).subarray(0, 65536)
-    new TextDecoder('utf-8', { fatal: true }).decode(head)
-    checks.push({ name: 'encoding-utf8', pass: true, detail: 'UTF-8 decode OK (head 64KB)' })
-  } catch (e) {
-    checks.push({ name: 'encoding-utf8', pass: false, detail: String((e && e.message) || e) })
-  }
-  // v1.23（方案A·大道至简）：delivery_check 不再自跑 headless smoke（此前复用 dev_page_check/pageCheckRun，反复出bug）。
-  // 页面交付物的视觉验证交给**模型用 bash 自测**（playwright/headless Chrome 截图 + read_image 视觉确认），
-  // 并在 evidence 里给 visual proof（kind=image, reviewed:true）。delivery_check 校验 evidence 门禁，而非自已渲染。
-  const requireSmoke = args?.requireSmoke !== false
-  if (args?.url && requireSmoke) {
-    checks.push({ name: 'page-verify', pass: false, detail: 'visual verify the page with bash (headless Chrome/playwright screenshot) + read_image (reviewed:true) into evidence — delivery_check gates the evidence, not a built-in browser' })
-  }
-  /* 证据门禁（正式交付契约——v1.14 规范化：schema 写清进工具描述，不再让模型读源码）：
-   * evidence.items[] 每项: { label, kind ∈ file|page|image|run|test|text|external|numeric, target?（file/page/image/test 必填路径）,
-   *   result?（run/text 必填文本）, reviewed?: true（page/image 视觉类必须人工复核过）}
-   * 页面交付物额外要求：至少一项 reviewed 的视觉证据。 */
-  const ev = args?.evidence
-  if (!ev || !Array.isArray(ev.items) || ev.items.length === 0) {
-    checks.push({ name: 'delivery-evidence', pass: false, detail: 'missing evidence items — provide at least one evidence item: {label, kind, target?, result?, reviewed?} (see tools_help for the exact shape)' })
-  } else {
-    // v1.16 外部验证器一等公民（AI 反馈 #9：门禁验结果不锁工具）——
-    // external = 外部验证器（Playwright/playwright-cli/自产报告）产物：target（截图/报告文件）
-    // 或 result（命令输出摘要）任一存在即合法；页面交付物仍需 ≥1 项 reviewed 视觉证据（page/image/external 皆可）。
-    const ALLOWED = new Set(['file', 'page', 'image', 'run', 'test', 'text', 'external', 'numeric'])
-    const failures = []
-    for (const it of ev.items) {
-      const label = String(it?.label || '').trim()
-      const kind = String(it?.kind || '').trim()
-      if (!label) { failures.push('empty label'); continue }
-      if (!ALLOWED.has(kind)) { failures.push('bad kind: ' + kind); continue }
-      if (kind === 'run' || kind === 'text') {
-        if (!String(it?.result || '').trim()) failures.push(kind + ' evidence without result')
-        continue
-      }
-      if (kind === 'numeric') {
-        // v1.24：数值不变量 evidence——模型自算物理/数值不变量（如黑洞光子球半径、守恒量 H/L），
-        // 门禁校验它必须带"数值结果"。这回应"自动计算物理不变量，让环境替模型完成主动怀疑"。
-        const res = String(it?.result ?? '').trim()
-        if (!res || !/^-?[\d.eE+-]+$/.test(res)) failures.push('numeric evidence needs a numeric result (e.g. minr=2.07, H=0.00)')
-        continue
-      }
-      if (kind === 'external') {
-        const hasTarget = String(it?.target || '').trim() !== ''
-        const hasResult = String(it?.result || '').trim() !== ''
-        if (!hasTarget && !hasResult) failures.push('external evidence needs target (file) or result (output summary)')
-        if (hasTarget) {
-          try {
-            const st = statSync(String(it.target))
-            if (!st.isFile() || st.size <= 0) failures.push('external target not valid file: ' + st)
-          } catch { failures.push('external target missing: ' + it.target) }
-        }
-        continue
-      }
-      const t = String(it?.target || '').trim()
-      if (!t) { failures.push(kind + ' evidence without target'); continue }
-      try {
-        const st = statSync(t)
-        if (!st.isFile() || st.size <= 0) failures.push('target not valid file: ' + t)
-      } catch { failures.push('target missing: ' + t) }
-      if ((kind === 'page' || kind === 'image') && it?.reviewed !== true) failures.push('visual not reviewed: ' + label)
-    }
-    if (args?.url) {
-      const hasReviewedVisual = (ev.items || []).some(it => (['page', 'image', 'external'].includes(String(it?.kind))) && it?.reviewed === true)
-      if (!hasReviewedVisual) failures.push('page deliverable needs at least one reviewed visual evidence (page/image/external)')
-    }
-    checks.push({ name: 'delivery-evidence', pass: failures.length === 0, detail: failures.length === 0 ? 'evidence accepted (' + ev.items.length + ' item(s))' : failures.join('; ') })
-    // v1.28（引导，不强杀）：若交付物存在可测数值不变量（守恒量/半径/计数/编译成功），但 evidence 里没有
-    // numeric 断言——只提示"缺一个数值断言"，不强杀。这响应黑洞建议"把'我认为对'变成'我验证过'"（B 强度）。
-    const noNumeric = (ev.items || []).every(it => String(it?.kind) !== 'numeric')
-    if (noNumeric) checks.push({ name: 'numeric-assertion', pass: true, detail: 'hint: if this deliverable has a measurable invariant (conserved qty / radius / count / compile-ok), add a numeric evidence item (kind=numeric, result=<number>) to turn "I think it works" into "I verified it". Non-blocking.' })
-  }
-  return { ok: checks.every((c) => c.pass), checks }
+export async function deliveryCheck(ctx, args, execution) {
+  const { deliveryCheck: verify } = await import('../../adapters/dsh/delivery-gate.mjs')
+  return verify(ctx, args, execution)
 }
 
 function deliveryCheckRender(_args, v) {
@@ -597,7 +513,9 @@ function deliveryCheckRender(_args, v) {
  *  工具名、文本意图不跨档跳级——某阶段缺少工具 = 工具分配位置问题（STAGES 归属），不是给出口。 */
 export function autoAdvance(stage, toolCalls, _text) {
   if (stage >= STAGES.length - 1) return stage
-  const names = new Set((Array.isArray(toolCalls) ? toolCalls : []).map((t) => (typeof t === 'string' ? t : t?.name)).filter(Boolean))
+  const names = new Set((Array.isArray(toolCalls) ? toolCalls : [])
+    .filter(t => t && typeof t === 'object' && t.success === true && t.result?.ok !== false)
+    .map(t => t.name).filter(Boolean))
   if (stage === 0 && (names.has('ask_user_question') || names.has('todo_write') || names.has('exit_plan_mode'))) return 1
   if (stage === 1 && (names.has('todo_write') || names.has('exit_plan_mode'))) return 2
   if (stage === 2 && names.has('delivery_check')) return 3
@@ -711,7 +629,7 @@ export function apply(ctx, config) {
     const sid = exec?.agent?.session?.id || 'anon'
     const enriched = enrichInvalidArgs(exec, downstream.kind === 'block' ? { isError: true, error: { message: (downstream.feedback || []).map((b) => b.text || '').join('\n') }, content: downstream.feedback } : result)
     if (downstream.kind === 'accept' && !result?.isError) {
-      invalidArgsStreak.delete(sid)
+      invalidArgsStreak.delete(sid + ':' + (exec?.name || ''))
       return downstream
     }
     if (!enriched) return downstream
@@ -1039,8 +957,8 @@ export function apply(ctx, config) {
       ok: { type: 'boolean' },
       checks: { type: 'array', items: { type: 'object', additionalProperties: false, properties: { name: { type: 'string' }, pass: { type: 'boolean' }, detail: { type: 'string' } }, required: ['name', 'pass', 'detail'] } },
     }, required: ['ok', 'checks'] }, render: deliveryCheckRender },
-    async execute(args) {
-      return await deliveryCheck(ctx, args)
+    async execute(args, execution) {
+      return await deliveryCheck(ctx, args, execution)
     },
   })
 
@@ -1184,7 +1102,7 @@ export function apply(ctx, config) {
         },
         render: deliveryCheckRender,
       },
-      execute: async (args) => await deliveryCheck(ctx, args),
+      execute: async (args) => await deliveryCheck(ctx, args, {agent}),
     })
 
     n += make({
@@ -1267,6 +1185,10 @@ export function apply(ctx, config) {
         if (args.action === 'complete' || args.action === 'blocked') {
           const authority = goalCompleteAuthority(execution)
           if (args.action === 'blocked' && authority.kind === 'goal-round' && authority.goal.roundsStarted < 3) throw new Error('blocked requires at least 3 consecutive goal rounds')
+          if (args.action === 'complete') {
+            const decision = await deliveryCheck(ctx, {}, {agent:execution.agent})
+            if (!decision.ok) throw new Error('EVIDENCE_PENDING: completion requires current accepted evidence')
+          }
           const goal = args.action === 'complete' ? goalsSvc.complete(execution.agent, ref) : goalsSvc.block(execution.agent, ref, { code: 'model-reported', message: String(args.blocked_reason || '') })
           if (authority.kind === 'goal-round' && exec && typeof exec.deferContext === 'function') {
             exec.deferContext({ role: 'user', source: { kind: 'plugin', plugin: 'tool-goal', form: 'notice' }, content: [{ type: 'text', text: args.action === 'complete' ? '<goal_complete>' : '<goal_blocked>' }] })
@@ -1376,12 +1298,11 @@ export function apply(ctx, config) {
   function currentSession() {
     const agent = ctx.get('agent')
     if (agent !== undefined && agent.session !== undefined) return agent.session
-    const last = [...agents.values()].at(-1)
-    return last?.session
+    return undefined // Missing identity must never select another session.
   }
   function currentAgent() {
-    const session = currentSession()
-    return session === undefined ? undefined : [...agents.values()].find((a) => a.session === session)
+    const agent = ctx.get('agent')
+    return agent?.session ? agent : undefined
   }
 }
 

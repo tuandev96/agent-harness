@@ -1,0 +1,15 @@
+{
+  "record_kind": "TEMPLATE_NOT_MAPPING",
+  "record_state": "DRAFT",
+  "id": null,
+  "framework_policy": null,
+  "baseline_ref": null,
+  "criterion_ids": [],
+  "plan_ref": null,
+  "code_refs": [],
+  "bindings": [],
+  "dependency_criterion_ids": [],
+  "impact_inputs": [],
+  "exclusions": [],
+  "supersedes": null
+}

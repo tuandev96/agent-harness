@@ -1,0 +1,23 @@
+{
+  "record_kind": "TEMPLATE_NOT_TRANSITION",
+  "record_state": "DRAFT",
+  "id": null,
+  "transition_kind": null,
+  "sequence": null,
+  "previous_transition_ref": null,
+  "before_head_ref": null,
+  "before_ref": null,
+  "after_ref": null,
+  "changed_row_ids": [],
+  "changed_root_keys": [],
+  "actor_id": null,
+  "actor_session_id": null,
+  "writer_epoch": null,
+  "authority_ref": null,
+  "review_refs": [],
+  "framework_policy": null,
+  "reason": null,
+  "created_at": null,
+  "migration": null,
+  "supersedes": null
+}

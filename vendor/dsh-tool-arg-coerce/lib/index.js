@@ -61,6 +61,7 @@ function enrichMessage(exec, result) {
 
 export function apply(ctx) {
   const streak = new Map()
+  ctx.effect?.(() => () => streak.clear(), 'coerce.streak.cleanup')
   ctx.on('tools/pre-execute', (exec, next) => {
     try {
       const coerced = coerceSearchToolArgs(exec?.name, exec?.arguments)
@@ -72,7 +73,7 @@ export function apply(ctx) {
     const downstream = await next()
     if (downstream.kind === 'accept' && !result?.isError) {
       const sid = exec?.agent?.session?.id
-      if (sid) streak.delete(sid)
+      if (sid) streak.delete(sid + ':' + (exec?.name || ''))
       return downstream
     }
     const text = enrichMessage(exec, downstream.kind === 'block'
@@ -82,6 +83,7 @@ export function apply(ctx) {
     const key = (exec?.agent?.session?.id || 'anon') + ':' + (exec?.name || '')
     const n = (streak.get(key) || 0) + 1
     streak.set(key, n)
+    if (streak.size > 1024) streak.delete(streak.keys().next().value)
     let out = text
     if (n >= 2 && SEARCH_PATTERN_TOOLS.has(exec?.name)) {
       out += '\nHint: glob/grep required string is name=pattern. Do not pass description. Example: glob({ pattern: "**/*.ts", path: "." })'

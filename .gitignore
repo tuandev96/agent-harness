@@ -40,3 +40,7 @@ vendor/**/*.tgz
 vendor/**/docs/verify-*.html
 
 .DS_Store
+
+# Generated Python bytecode
+__pycache__/
+*.py[cod]

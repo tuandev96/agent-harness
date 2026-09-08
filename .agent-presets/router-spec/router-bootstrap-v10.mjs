@@ -148,7 +148,7 @@ export function apply(ctx, config) {
       // touching anything — standard mode restores the full sections/contexts;
       // spec mode keeps its classified persona over the untrimmed list.
       if (routerMode === 'standard') return assembled
-      return { ...assembled, sections, contexts: [] }
+      return { ...assembled, sections }
     }
 
     const available = new Set(assembled.tools.map((tool) => tool.name))
@@ -164,7 +164,7 @@ export function apply(ctx, config) {
     return {
       ...assembled,
       sections,
-      contexts: [],
+      contexts: assembled.contexts,
       tools: assembled.tools.filter((tool) => core.has(tool.name)),
     }
   })
@@ -349,8 +349,7 @@ export function apply(ctx, config) {
   function currentSession() {
     const agent = ctx.get('agent')
     if (agent !== undefined && agent.session !== undefined) return agent.session
-    const last = [...agents.values()].at(-1)
-    return last?.session
+    return undefined // An exact calling session is required.
   }
 
   function currentAgent() {

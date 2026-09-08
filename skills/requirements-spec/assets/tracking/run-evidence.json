@@ -1,0 +1,44 @@
+{
+  "record_kind": "TEMPLATE_NOT_EVIDENCE",
+  "record_state": "DRAFT",
+  "format_version": 1,
+  "id": null,
+  "baseline_ref": null,
+  "framework_policy": null,
+  "plan_ref": null,
+  "mapping_refs": [],
+  "criterion_ids": [],
+  "candidate": {
+    "commit": null,
+    "source_tree_sha256": null,
+    "binary_ref": null,
+    "dirty_tree": null
+  },
+  "inputs": [],
+  "product_input_paths": [],
+  "digest_exclusions": [],
+  "producer_identity": {
+    "kind": null,
+    "id": null,
+    "session_id": null,
+    "invocation_ref": null
+  },
+  "started_at": null,
+  "finished_at": null,
+  "command": null,
+  "status": "NOT_RUN",
+  "collection": {
+    "expected_selectors": [],
+    "collected_selectors": [],
+    "skipped_selectors": [],
+    "exit_code": null
+  },
+  "required_profiles": [],
+  "assertions": [],
+  "per_test_results": [],
+  "artifacts": [],
+  "exclusions": [],
+  "supersedes": null,
+  "resolved_finding_refs": [],
+  "secrets_allowed": false
+}
