@@ -1,7 +1,14 @@
 # Trạng thái triển khai và phạm vi tin cậy
 
-Repo đang được nâng cấp từ checkpoint `e58c4ab`. Nguồn công việc là
-`plans/260908-2104-harness-comprehensive-upgrade/`; tài liệu này không thay tracker.
+Hướng dẫn cài đặt/sử dụng được đối chiếu với checkpoint `6ab731c` ngày 2026-09-09.
+Đây là mốc tham chiếu của tài liệu, không phải chứng nhận nghiệm thu toàn bộ mã nguồn.
+Nguồn công việc vẫn là `plans/260908-2104-harness-comprehensive-upgrade/`;
+tài liệu này không thay tracker.
+
+Bắt đầu tại [README](../README.md), [cài đặt](installation.md),
+[cấu hình từng agent](agents.md), [sử dụng/CLI](usage.md) hoặc
+[hướng dẫn tiếng Việt](huong-dan.vi.md). Các ví dụ portable không yêu cầu DSH;
+runtime CLI và host integration là những bước tùy chọn, tách biệt.
 
 ## Các mức kết luận
 
