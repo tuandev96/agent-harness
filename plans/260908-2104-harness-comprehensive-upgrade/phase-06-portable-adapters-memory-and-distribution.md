@@ -1,6 +1,6 @@
 # Phase 06 — Portability, memory và cài đặt
 
-Status: NOT_STARTED
+Status: IN_PROGRESS — implementation and acceptance tracked separately
 Assignee: UNASSIGNED
 Independent reviewer: UNASSIGNED
 Authority: phải khớp slice triển khai được duyệt; yêu cầu lập plan chưa cấp quyền thực thi phase này.
@@ -37,3 +37,7 @@ Actual command/invocation; candidate/input hash; fixture/profile; expected vs ob
 ## Stop / rollback
 
 Matrix và yêu cầu live test còn cần platform thực. Không auto-install toàn máy để “chứng minh portable”; không tạo watcher hay gửi dữ liệu telemetry ra ngoài mặc định.
+
+## Current implementation evidence pointer
+
+See `reports/current-progress.md` and `reports/current-status.json` for source presence and current checker outputs. No unchecked acceptance criterion is promoted solely by this status update. External/native/review gates require independent evidence.

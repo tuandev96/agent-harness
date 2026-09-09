@@ -1,0 +1,374 @@
+{
+  "kind": "IMPLEMENTATION_READBACK",
+  "recordedAt": "2026-09-09T00:44:27.494609+00:00",
+  "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+  "components": [
+    {
+      "name": "runtime-contract-evaluator",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "src/core/types.ts",
+          "present": true,
+          "sha256": "30ba3d4aaea4c9571b37e7d01bcad8713fc94fced787698f435a4b0eab5a7b6f"
+        },
+        {
+          "path": "src/core/schema.ts",
+          "present": true,
+          "sha256": "f8fb4e5e84b44aa04663c303b901fa8f4238c577136fd484ea3e5d10860e01b3"
+        },
+        {
+          "path": "src/core/contract.ts",
+          "present": true,
+          "sha256": "a683b5b7bce8569cdd18cb2c76665b3dcaf1b622b3ad66f3b43dd365672de3ba"
+        },
+        {
+          "path": "src/core/evaluator.ts",
+          "present": true,
+          "sha256": "73da8343cb23ac360c6693d9575ab90b74dd3da56da871a7c96b091e7d188b15"
+        }
+      ]
+    },
+    {
+      "name": "evidence-lifecycle",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "src/core/recorder.ts",
+          "present": true,
+          "sha256": "cc54b5f6dbeda43268931b8c44641ef35dc92c2720c663a4f55e497f99a17540"
+        },
+        {
+          "path": "src/core/reporter.ts",
+          "present": true,
+          "sha256": "ee17ecac83517a47300699f56f55bb4b55407d4013f010a73ffddf7939dd7f80"
+        },
+        {
+          "path": "src/core/store.ts",
+          "present": true,
+          "sha256": "770656879f030043a3e07fc816c2357c7936aa30e94bcd14843bc121331f1da3"
+        },
+        {
+          "path": "src/core/service.ts",
+          "present": true,
+          "sha256": "813b43a7f9acedbb2a1da0ccf5015c31de69121aef509b2dfd5fa09aa58046f3"
+        }
+      ]
+    },
+    {
+      "name": "catalog",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "src/core/catalog.ts",
+          "present": true,
+          "sha256": "68772260b05d620f031f47688d6ca96fafdb3cd62f1401d7cd5a23dcbe005370"
+        },
+        {
+          "path": "skills/requirements-spec/scripts/validate_spec.py",
+          "present": true,
+          "sha256": "9c52adef7d2575cb8aba268aee4928b0c7c8b09d827229e95f55b4745d24f1c5"
+        }
+      ]
+    },
+    {
+      "name": "dsh-adapter",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "adapters/dsh/host-plugin.mjs",
+          "present": true,
+          "sha256": "704664fa580435c5621b32527caa9d2a4def0c8fcbeaa5b0aade024cc5f5a298"
+        },
+        {
+          "path": "adapters/dsh/delivery-gate.mjs",
+          "present": true,
+          "sha256": "c0b2340ec135d5ca7022e32a6884ddc624b5d08046fa77dcf751ee143841899d"
+        },
+        {
+          "path": "adapters/dsh/visibility-state.mjs",
+          "present": true,
+          "sha256": "d298954b138bfa977773bf298953215954acc20f51b5bc0fdbd4d298415bcc3c"
+        }
+      ]
+    },
+    {
+      "name": "mcp-hardening",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "vendor/dsh-mcp-settings/src/security.js",
+          "present": true,
+          "sha256": "9ad984f8ce807d2b522428c49dafc22b26a759826a5369482d86929f7f448139"
+        },
+        {
+          "path": "vendor/dsh-mcp-settings/src/store.js",
+          "present": true,
+          "sha256": "ad8a880780c64aeaa707f2caa865dedcecd771551ccd1c162177b6554e7728f9"
+        },
+        {
+          "path": "vendor/dsh-mcp-settings/src/mount-manager.js",
+          "present": true,
+          "sha256": "e73032b785865fb9ceea4c3e044445e94182bfa9d98a43e76eea3c3376ad98d9"
+        }
+      ]
+    },
+    {
+      "name": "replay-lifecycle",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "vendor/dsh-replay-dedup/src/runtime.js",
+          "present": true,
+          "sha256": "7904d445377e6612b4bdca7dd9f1b798b21426fdf02cb3276c7c57243e2c9893"
+        }
+      ]
+    },
+    {
+      "name": "portable-install-memory",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "src/core/installer.ts",
+          "present": true,
+          "sha256": "e8215746f080496be153517f0f9ecd483a6ce164b60644838fd25879c14a04ac"
+        },
+        {
+          "path": "src/core/memory.ts",
+          "present": true,
+          "sha256": "024185393db6da9bc836277c66d12f1fcc51bfaa90a7339df00fd270082693a8"
+        },
+        {
+          "path": "adapters/portable/index.mjs",
+          "present": true,
+          "sha256": "d277c630ffd4d009c39c39003aa39c59563d44915adac3a13f27eb68babef16c"
+        },
+        {
+          "path": "scripts/install.mjs",
+          "present": true,
+          "sha256": "dcf4c008644667b8d2a1621ead4257f60c9d01d5088abdf0c6dffad4790c8a4b"
+        }
+      ]
+    },
+    {
+      "name": "cli",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "src/cli/main.ts",
+          "present": true,
+          "sha256": "26060b7828dea5a26719b45dfc7f5e5ce67e652ae7003d0b0570d315833b3453"
+        },
+        {
+          "path": "src/cli/project.ts",
+          "present": true,
+          "sha256": "4356e740946e6b35f73a268bebd8f99983c417e3e4725088fba2e3a6e7f987f6"
+        },
+        {
+          "path": "bin/harness.mjs",
+          "present": true,
+          "sha256": "73b2191479050a5fa1af4d38c2a8452c10f7a38572a564f6d7cf4c70e13e49d5"
+        }
+      ]
+    },
+    {
+      "name": "repository-runner",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "scripts/test.mjs",
+          "present": true,
+          "sha256": "51572a6ed27ceff1bd3bb67240e56ade718cfff148e84a92996c32793f029f5e"
+        }
+      ]
+    },
+    {
+      "name": "offline-eval",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "evals/run.mjs",
+          "present": true,
+          "sha256": "391b757a17c7f865bf3396c6e72e15a7c8fe6c9c12bb5e69e63750fa97a6a501"
+        },
+        {
+          "path": "evals/metrics.mjs",
+          "present": true,
+          "sha256": "c3888da024f22fe0372043f953e7940de45a3896effd56bc5cecbec531d4db64"
+        }
+      ]
+    },
+    {
+      "name": "private-packaging",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": "scripts/package.mjs",
+          "present": true,
+          "sha256": "8335cb8917d05cd6213f7c05ef692c02e0c0cdf3ebeb32a3c1180d876740f048"
+        },
+        {
+          "path": "scripts/package-archive.py",
+          "present": true,
+          "sha256": "3fc116c98d3f1a5f19ce5b5ceca89229fd867f4a1d348fb8acbae5942116a8f1"
+        }
+      ]
+    },
+    {
+      "name": "ci-definition",
+      "sourceState": "PRESENT_NOT_ACCEPTANCE",
+      "files": [
+        {
+          "path": ".github/workflows/harness-checks.yml",
+          "present": true,
+          "sha256": "3353e33177a220d360613196c8aa10654ac9de082df89338b5c926658730d5bc"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "typecheck",
+      "outcome": "NO_RESULT",
+      "usableAsCurrentCheckerEvidence": false
+    },
+    {
+      "name": "core",
+      "outcome": "NO_RESULT",
+      "usableAsCurrentCheckerEvidence": false
+    },
+    {
+      "kind": "BOUNDED_LOCAL_CHECK",
+      "name": "plugins",
+      "argv": [
+        "node",
+        "scripts/test.mjs",
+        "--suite",
+        "plugins"
+      ],
+      "recordedAt": "2026-09-09T00:41:06.784961+00:00",
+      "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+      "inputsUnchanged": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 33842,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-plugins.log",
+      "logSha256": "3b87b57bdbe89765cea0314477bf5fe1efc3251d26e6f64a69f84b8147178b09",
+      "independentReview": "NOT_PERFORMED",
+      "releaseReady": false,
+      "logIntegrityMatches": true,
+      "matchesCurrentInputs": true,
+      "usableAsCurrentCheckerEvidence": true
+    },
+    {
+      "name": "operations",
+      "outcome": "NO_RESULT",
+      "usableAsCurrentCheckerEvidence": false
+    },
+    {
+      "kind": "BOUNDED_LOCAL_CHECK",
+      "name": "regression",
+      "argv": [
+        "node",
+        "scripts/test.mjs",
+        "--suite",
+        "regression"
+      ],
+      "recordedAt": "2026-09-09T00:42:16.152147+00:00",
+      "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+      "inputsUnchanged": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 10133,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-regression.log",
+      "logSha256": "0dad5a22f47eaa96231da380b0ef345f41a519a0f9933e587cf6bc50c3768f3b",
+      "independentReview": "NOT_PERFORMED",
+      "releaseReady": false,
+      "logIntegrityMatches": true,
+      "matchesCurrentInputs": true,
+      "usableAsCurrentCheckerEvidence": true
+    },
+    {
+      "kind": "BOUNDED_LOCAL_CHECK",
+      "name": "spec",
+      "argv": [
+        "node",
+        "scripts/test.mjs",
+        "--suite",
+        "spec"
+      ],
+      "recordedAt": "2026-09-09T00:41:43.204077+00:00",
+      "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+      "inputsUnchanged": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 23675,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-spec.log",
+      "logSha256": "5983e44e9bb8de4604404e8d886b03f0b28b0e3c349c9531d21adaee4586edad",
+      "independentReview": "NOT_PERFORMED",
+      "releaseReady": false,
+      "logIntegrityMatches": true,
+      "matchesCurrentInputs": true,
+      "usableAsCurrentCheckerEvidence": true
+    },
+    {
+      "kind": "BOUNDED_LOCAL_CHECK",
+      "name": "legacy",
+      "argv": [
+        "node",
+        "scripts/test.mjs",
+        "--suite",
+        "legacy"
+      ],
+      "recordedAt": "2026-09-09T00:43:08.878674+00:00",
+      "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+      "inputsUnchanged": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 17131,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-legacy.log",
+      "logSha256": "b8b628dafe771f05a1febd8a7e720846a8d6d7201ed16cadc4a1202ce3d4f164",
+      "independentReview": "NOT_PERFORMED",
+      "releaseReady": false,
+      "logIntegrityMatches": true,
+      "matchesCurrentInputs": true,
+      "usableAsCurrentCheckerEvidence": true
+    },
+    {
+      "kind": "BOUNDED_LOCAL_CHECK",
+      "name": "package",
+      "argv": [
+        "node",
+        "scripts/package.mjs",
+        "--check"
+      ],
+      "recordedAt": "2026-09-09T00:43:21.309368+00:00",
+      "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+      "inputsUnchanged": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 3264,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-package.log",
+      "logSha256": "6a3999919de9e975cfe9506726f5e16e0f450903591c592f13016537dfc78906",
+      "independentReview": "NOT_PERFORMED",
+      "releaseReady": false,
+      "logIntegrityMatches": true,
+      "matchesCurrentInputs": true,
+      "usableAsCurrentCheckerEvidence": true
+    }
+  ],
+  "allLocalChecksCurrentAndPassing": false,
+  "independentReview": "PENDING",
+  "nativeDSH": "NOT_VERIFIED",
+  "browserUI": "NOT_VERIFIED",
+  "windowsProcessTree": "NOT_VERIFIED",
+  "paidModelComparison": "NOT_RUN",
+  "remoteRequiredCheckRejection": "NOT_OBSERVED",
+  "releaseReady": false,
+  "trustProfile": "ASSISTED"
+}

@@ -1,6 +1,6 @@
 # Phase 01 — Tích hợp skill và gia cố đặc tả
 
-Status: NOT_STARTED
+Status: IN_PROGRESS — implementation and acceptance tracked separately
 Assignee: UNASSIGNED
 Independent reviewer: UNASSIGNED
 Authority: phải khớp slice triển khai được duyệt; yêu cầu lập plan chưa cấp quyền thực thi phase này.
@@ -37,3 +37,7 @@ Actual command/invocation; candidate/input hash; fixture/profile; expected vs ob
 ## Stop / rollback
 
 Đổi format hoặc status semantics phải có compatibility/migration; không rewrite frozen SRS. Chuẩn bị Proposed spec cho chính harness trước bước runtime tương ứng, chưa freeze thay người dùng.
+
+## Current implementation evidence pointer
+
+See `reports/current-progress.md` and `reports/current-status.json` for source presence and current checker outputs. No unchecked acceptance criterion is promoted solely by this status update. External/native/review gates require independent evidence.

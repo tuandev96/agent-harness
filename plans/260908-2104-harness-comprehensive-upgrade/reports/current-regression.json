@@ -1,0 +1,21 @@
+{
+  "kind": "BOUNDED_LOCAL_CHECK",
+  "name": "regression",
+  "argv": [
+    "node",
+    "scripts/test.mjs",
+    "--suite",
+    "regression"
+  ],
+  "recordedAt": "2026-09-09T00:42:16.152147+00:00",
+  "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+  "inputsUnchanged": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "outcome": "PASS",
+  "durationMs": 10133,
+  "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-regression.log",
+  "logSha256": "0dad5a22f47eaa96231da380b0ef345f41a519a0f9933e587cf6bc50c3768f3b",
+  "independentReview": "NOT_PERFORMED",
+  "releaseReady": false
+}

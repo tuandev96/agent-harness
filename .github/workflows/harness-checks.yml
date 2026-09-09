@@ -1,0 +1,37 @@
+name: Harness repository checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: harness-checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  local-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install pinned development dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build runtime and exported schemas
+        run: npm run build && node scripts/export-schemas.mjs
+      - name: Build vendor plugin artifacts
+        run: node scripts/build-plugins.mjs
+      - name: Run repository tests
+        run: npm test
+      - name: Check private distribution inventory
+        run: npm run package:check
+# This workflow does not configure required branch checks or approve releases.
+# Administrator bypass and remote rejection must be independently observed.

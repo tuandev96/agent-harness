@@ -1,0 +1,47 @@
+{
+  "kind": "LOCAL_BUILD_CHECKS",
+  "recordedAt": "2026-09-09T00:33:30.192458+00:00",
+  "checks": [
+    {
+      "name": "continuation-build",
+      "command": [
+        "node",
+        "scripts/build.mjs"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 9392,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/continuation-build.log",
+      "logSha256": "32f29fce4a044e614ad635f3ad61de10c1177a1873e830f7b01e31047d9ca16a"
+    },
+    {
+      "name": "continuation-schemas",
+      "command": [
+        "node",
+        "scripts/export-schemas.mjs"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 3243,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/continuation-schemas.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "continuation-plugin-build",
+      "command": [
+        "node",
+        "scripts/build-plugins.mjs"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "outcome": "PASS",
+      "durationMs": 1909,
+      "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/continuation-plugin-build.log",
+      "logSha256": "665a7c5c9bec88d751fc426c2ac6de249ecfc0780aa29bbab048727118249bba"
+    }
+  ],
+  "releaseReady": false,
+  "independentReview": "NOT_PERFORMED"
+}

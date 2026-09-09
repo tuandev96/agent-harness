@@ -1,7 +1,7 @@
 # Plan nâng cấp toàn diện Agent Harness
 
-Status: DRAFT_FOR_REVIEW
-Implementation: NOT_STARTED
+Status: IN_PROGRESS
+Implementation: PARTIAL — acceptance gates remain open
 Created: 2026-09-08T21:11:54+07:00
 Baseline: repo commit `a1ef3fd`; working tree sạch trước khi lập tài liệu.
 Work source: thư mục plan này; không tạo board/ledger tiến độ thứ hai.
@@ -105,3 +105,7 @@ Self-test gốc: exit 0, good fixture được chấp nhận và 15 lớp lỗi 
 - [ ] Phase 00–08: chưa thực hiện.
 - [ ] Independent review: PENDING.
 - [ ] Runtime / merge / release acceptance: NOT_ASSESSED trong task này.
+
+## Continuation readback gate
+
+The user authorized implementation after the original documentation-only plan. Work continues from e58c4ab. The original scope restrictions on live credentials, public release, paid models, and unrelated repositories remain. Current source presence is not acceptance evidence. Bounded check-step reports record actual exit codes and input hashes; timeout/readback gaps never become PASS. Independent review and native/platform/release gates remain pending until observed.

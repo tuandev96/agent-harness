@@ -1,0 +1,12 @@
+import {readFileSync,writeFileSync,mkdirSync,copyFileSync,existsSync,unlinkSync} from 'node:fs';
+import {stripTypeScriptTypes} from 'node:module';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const replay=root+'vendor/dsh-replay-dedup/';
+mkdirSync(replay+'lib',{recursive:true});
+writeFileSync(replay+'lib/index.js',stripTypeScriptTypes(readFileSync(replay+'src/index.ts','utf8')));
+copyFileSync(replay+'src/runtime.js',replay+'lib/runtime.js');
+if(existsSync(replay+'lib/index.js.map'))unlinkSync(replay+'lib/index.js.map');
+writeFileSync(root+'vendor/dsh-mcp-settings/lib/index.js',"// Compatibility entrypoint; source is authoritative.\nexport * from '../src/index.js'\n");
+await import('../vendor/dsh-mcp-settings/scripts/build-client.mjs');
+console.log('PLUGIN_BUILD_OK: replay runtime and MCP client/compatibility entrypoints');

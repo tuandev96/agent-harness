@@ -1,1 +1,2 @@
-export { apply, inject, name, normalizeServer, toMcpConfig } from '../src/index.js'
+// Compatibility entrypoint; source is authoritative.
+export * from '../src/index.js'

@@ -22,6 +22,8 @@ import { homedir, tmpdir } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync, readdirSync, rmSync } from 'node:fs'
 import vm from 'node:vm'
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { writeVisibilityState } from '../../adapters/dsh/visibility-state.mjs'
 
 export const name = 'router-bootstrap'
 export const inject = ['systemPrompt', 'tools', 'llm']
@@ -544,14 +546,21 @@ function loadStageState() {
       }
       return out
     }
-  } catch (e) { if (e && e.code !== 'ENOENT') console.error('[router-bootstrap] loadStageState failed:', e) }
-  return {}
+    throw new Error('ROUTER_STATE_FORMAT_INVALID')
+  } catch (e) {
+    if (e?.code === 'ENOENT') return {}
+    console.error('[router-bootstrap] loadStageState failed:', e)
+    throw new Error('ROUTER_STATE_CORRUPT: repair the advisory cache; task authority is unchanged')
+  }
 }
 function saveStageState() {
   try {
-    mkdirSync(join(stageFile(), '..'), { recursive: true })
-    writeFileSync(stageFile(), JSON.stringify({ version: 2, savedAt: new Date().toISOString(), sessions: ensureStage() }, null, 2), 'utf8')
-  } catch (e) { console.error('[router-bootstrap] saveStageState failed:', e) }
+    writeVisibilityState(stageFile(), { version: 2, savedAt: new Date().toISOString(), sessions: ensureStage() })
+  } catch (e) {
+    stageCache = null
+    console.error('[router-bootstrap] saveStageState failed:', e)
+    throw new Error('ROUTER_STATE_WRITE_FAILED')
+  }
 }
 
 /** 阶段推进后标记「已消费」的事件下标：毫秒时间戳分辨率不足，同一毫秒内的调用会被
@@ -591,6 +600,7 @@ function applyStageRestrict(agent, stage) {
 }
 
 export function apply(ctx, config) {
+  const executionScope = new AsyncLocalStorage()
   try { mkdirSync(join(dshHomeForState(), 'router-standard'), { recursive: true }); writeFileSync(join(dshHomeForState(), 'router-standard', 'last-mount.txt'), 'new-gen v0.8 ' + new Date().toISOString(), 'utf8') } catch { /* marker */ }
   // 运行环境修整：① node 进 PATH（harness 的 node 在自定义运行时目录，不在系统 PATH——v1.5 实测
   // "node not recognized" 的根因）；② Git bin 前置（让 git 在任何 shell 都可用；bash 工具在 win32
@@ -747,6 +757,7 @@ export function apply(ctx, config) {
     ctx.effect(() => ctx.tools.register({
       ...tool,
       parameters: toJsonSchema(tool.parameters),
+      execute: (args, execution) => executionScope.run(execution, () => tool.execute(args, execution)),
     }))
   }
 
@@ -982,7 +993,10 @@ export function apply(ctx, config) {
           // dev_page_check 返回对象 → "invalid output: value must be a string"，工具整体不可用。
           // 有 def.output 的（对象 schema + 专属 render）透传；无的保持字符串兼容。
           output: def.output ? { schema: def.output.schema, render: def.output.render } : { schema: { type: 'string' }, render: (_a, v) => [{ type: 'text', text: String(v) }] },
-          execute: def.execute,
+          execute: (args, execution) => {
+            if (execution?.agent !== agent) throw new Error('EXACT_CALLING_AGENT_REQUIRED')
+            return executionScope.run(execution, () => def.execute(args, execution))
+          },
         })
         return 1
       } catch { return 0 }
@@ -1295,14 +1309,13 @@ export function apply(ctx, config) {
     },
   })
 
-  function currentSession() {
-    const agent = ctx.get('agent')
-    if (agent !== undefined && agent.session !== undefined) return agent.session
-    return undefined // Missing identity must never select another session.
-  }
+  function currentSession() { return currentAgent()?.session }
   function currentAgent() {
-    const agent = ctx.get('agent')
-    return agent?.session ? agent : undefined
+    const agent = executionScope.getStore()?.agent ?? ctx.get('agent')
+    const registry = ctx.get('agents')
+    if (!agent?.session || registry?.get?.(agent.id) !== agent || agent.status !== 'running') return undefined
+    if (typeof registry.currentInitiator === 'function' && registry.currentInitiator() !== agent) return undefined
+    return agent
   }
 }
 

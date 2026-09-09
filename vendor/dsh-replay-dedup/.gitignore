@@ -1,4 +1,7 @@
 node_modules/
-lib/
+# Keep the built entrypoint and its runtime together.
+lib/*
+!lib/index.js
+!lib/runtime.js
 *.tsbuildinfo
 *.tgz

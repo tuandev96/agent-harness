@@ -105,6 +105,7 @@ function emptyDraft() {
     cwd: '',
     toolCallTimeoutMs: 60000,
     reconnectEnabled: true,
+    clearSecrets: false,
   }
 }
 
@@ -144,6 +145,7 @@ function serverToDraft(server) {
     cwd: server.cwd ?? '',
     toolCallTimeoutMs: server.toolCallTimeoutMs ?? 60000,
     reconnectEnabled: server.reconnect?.enabled !== false,
+    clearSecrets: false,
   }
 }
 
@@ -157,6 +159,7 @@ function draftToServer(draft) {
     transport: draft.transport,
     toolCallTimeoutMs: Number(draft.toolCallTimeoutMs) || 60000,
     reconnect: { enabled: draft.reconnectEnabled !== false },
+    clearSecrets: draft.clearSecrets === true,
   }
   if (draft.transport === 'stdio') {
     return {
@@ -271,6 +274,7 @@ function ServerForm({ draft, setDraft, onCancel, onSave, busy, error }) {
       h('input', { type: 'checkbox', checked: draft.enabled, onChange: set('enabled') }),
       'Enabled (mount tools now)',
     ),
+    draft.id ? h('label', { className: 'mcp-check' }, h('input', { type: 'checkbox', checked: draft.clearSecrets === true, onChange: set('clearSecrets') }), 'Clear saved private connection fields. Otherwise blank headers, environment and arguments keep their saved values.') : null,
     error ? h('p', { className: 'mcp-err' }, error) : null,
     h('div', { className: 'mcp-actions' },
       h('button', { type: 'submit', className: 'mcp-btn', disabled: busy }, busy ? 'Saving…' : 'Save'),

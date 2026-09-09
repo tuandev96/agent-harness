@@ -1,0 +1,20 @@
+{
+  "kind": "BOUNDED_LOCAL_CHECK",
+  "name": "package",
+  "argv": [
+    "node",
+    "scripts/package.mjs",
+    "--check"
+  ],
+  "recordedAt": "2026-09-09T00:43:21.309368+00:00",
+  "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+  "inputsUnchanged": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "outcome": "PASS",
+  "durationMs": 3264,
+  "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-package.log",
+  "logSha256": "6a3999919de9e975cfe9506726f5e16e0f450903591c592f13016537dfc78906",
+  "independentReview": "NOT_PERFORMED",
+  "releaseReady": false
+}

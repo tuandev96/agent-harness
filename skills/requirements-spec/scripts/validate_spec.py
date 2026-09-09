@@ -6,6 +6,8 @@ Exit 0 = no errors. Exit 1 = errors. Warnings never fail the run.
 """
 import re
 import sys
+import json
+import hashlib
 import argparse
 import json
 from datetime import datetime
@@ -346,6 +348,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('path')
     parser.add_argument('--quiet', action='store_true')
+    parser.add_argument('--catalog-json', action='store_true', help='emit structural inventory only; not semantic approval')
     parser.add_argument('--baseline', help='prior SRS; removed IDs require --retired')
     parser.add_argument('--retired', help='JSON array of explicitly retired source IDs')
     args = parser.parse_args()
@@ -375,6 +378,20 @@ def main():
     except (OSError, UnicodeError, ValueError) as error:
         print(f'{path}:0: ERROR: {error}')
         return 1
+
+    if args.catalog_json:
+        def issues(values):
+            return [{'line': line, 'message': message,
+                     'id': hashlib.sha256(f'{line}:{message}'.encode()).hexdigest()}
+                    for line, message in values]
+        criteria = [{'id': identity, 'requirementId': row['req'], 'kind': 'AC'}
+                    for identity, row in doc['acs'].items()]
+        criteria += [{'id': identity, 'requirementId': None, 'kind': 'NFR'} for identity in doc['nfrs']]
+        print(json.dumps({'contract': 'requirements-catalog/1', 'valid': not err,
+                          'semanticApproval': False, 'sourceSha256': hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+                          'requirementIds': list(doc['reqs']), 'criteria': criteria,
+                          'featureIds': list(doc['features']), 'errors': issues(err), 'warnings': issues(warn)}, ensure_ascii=False))
+        return 1 if err else 0
 
     for label, items in (("ERROR", err), ("WARN", warn)):
         for ln, m in sorted(items):

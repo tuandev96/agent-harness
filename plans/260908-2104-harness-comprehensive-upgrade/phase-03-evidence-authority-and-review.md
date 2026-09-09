@@ -1,6 +1,6 @@
 # Phase 03 — Nguồn bằng chứng, authority và reviewer
 
-Status: NOT_STARTED
+Status: IN_PROGRESS — implementation and acceptance tracked separately
 Assignee: UNASSIGNED
 Independent reviewer: UNASSIGNED
 Authority: phải khớp slice triển khai được duyệt; yêu cầu lập plan chưa cấp quyền thực thi phase này.
@@ -37,3 +37,7 @@ Actual command/invocation; candidate/input hash; fixture/profile; expected vs ob
 ## Stop / rollback
 
 Quyền producer, external anchor và cách vận hành reviewer chưa được người dùng chốt. Không tự cấu hình CI, tài khoản, khóa hoặc API trả phí để tạo authority.
+
+## Current implementation evidence pointer
+
+See `reports/current-progress.md` and `reports/current-status.json` for source presence and current checker outputs. No unchecked acceptance criterion is promoted solely by this status update. External/native/review gates require independent evidence.

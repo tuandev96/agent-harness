@@ -41,6 +41,18 @@ vendor/**/docs/verify-*.html
 
 .DS_Store
 
+# Built locally from the pinned toolchain; private runtime state is never source.
+/dist/
+/.harness/
+/artifacts/
+/coverage/
+
 # Generated Python bytecode
 __pycache__/
 *.py[cod]
+
+# Local verification artifacts are not distribution inputs
+.harness-checks/
+
+# Transient process exit markers, not verification evidence
+plans/**/reports/*.exit

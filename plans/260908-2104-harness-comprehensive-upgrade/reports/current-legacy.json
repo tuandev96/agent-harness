@@ -1,0 +1,21 @@
+{
+  "kind": "BOUNDED_LOCAL_CHECK",
+  "name": "legacy",
+  "argv": [
+    "node",
+    "scripts/test.mjs",
+    "--suite",
+    "legacy"
+  ],
+  "recordedAt": "2026-09-09T00:43:08.878674+00:00",
+  "inputDigest": "facfb0d403cfb95fbbf07ed6aa70de0b7578d3bc77cf73b30618eb5c49136f25",
+  "inputsUnchanged": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "outcome": "PASS",
+  "durationMs": 17131,
+  "log": "plans/260908-2104-harness-comprehensive-upgrade/reports/current-legacy.log",
+  "logSha256": "b8b628dafe771f05a1febd8a7e720846a8d6d7201ed16cadc4a1202ce3d4f164",
+  "independentReview": "NOT_PERFORMED",
+  "releaseReady": false
+}

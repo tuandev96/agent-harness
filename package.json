@@ -1,0 +1,25 @@
+{
+  "name": "@agent-harness/local",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bin": {
+    "agent-harness": "bin/harness.mjs"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "node scripts/test.mjs",
+    "check": "npm run typecheck && npm run build && npm test",
+    "doctor": "node bin/harness.mjs doctor",
+    "eval": "node evals/run.mjs",
+    "package:check": "node scripts/package.mjs --check"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0",
+    "typescript": "5.9.3"
+  }
+}
