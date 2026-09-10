@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phân tích AI-Native SDLC Playbook × Agent Harness</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root { --ink: #0f172a; --muted: #475569; --accent: #0f766e; --bg: #f8fafc; --panel: #ffffff; --line: #e2e8f0; --warn: #b45309; --ok: #047857; --gap: #b91c1c; }
+  body { background: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+  .kv td, .kv th { border-bottom: 1px solid var(--line); padding: 10px 12px; vertical-align: top; }
+  .badge { display:inline-block; border-radius:999px; padding:2px 10px; font-size:12px; font-weight:600; }
+  .ok { background:#d1fae5; color:var(--ok); }
+  .gap { background:#fee2e2; color:var(--gap); }
+  .partial { background:#fef3c7; color:var(--warn); }
+  .na { background:#e2e8f0; color:#334155; }
+  .strong { background:#ccfbf1; color:#0f766e; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  h1,h2,h3 { letter-spacing: -0.02em; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.86em; background:#f1f5f9; padding:1px 5px; border-radius:4px; }
+  .callout { border-left: 4px solid var(--accent); background:#ecfdf5; padding: 14px 16px; border-radius: 0 10px 10px 0; }
+</style>
+</head>
+<body class="antialiased">
+<header class="bg-slate-900 text-white">
+  <div class="mx-auto max-w-5xl px-6 py-10">
+    <p class="text-teal-300 text-sm font-semibold tracking-wide uppercase">Plans · 260908-2104 harness-comprehensive-upgrade</p>
+    <h1 class="mt-2 text-3xl md:text-4xl font-bold">Phân tích AI-Native SDLC Playbook × Agent Harness</h1>
+    <p class="mt-3 text-slate-300 max-w-3xl">Phân tích toàn bộ framework 14 bài của Claude Academy, đối chiếu với codebase agent-harness (protocol portable, skill requirements, runtime cục bộ, adapter, cầu nối DSH) — rồi đề xuất lộ trình trở thành harness mạnh nhất.</p>
+    <p class="mt-4 text-xs text-slate-400">Nguồn: academy.claude.com/courses/ai-native-sdlc-playbook · Checkpoint codebase: agent-harness v0.3.0 · Plan worktree · Loại báo cáo: gap analysis</p>
+  </div>
+</header>
+
+<main class="mx-auto max-w-5xl px-6 py-10 space-y-10">
+
+  <section class="panel p-6">
+    <h2 class="text-xl font-bold mb-3">Kết luận tổng</h2>
+    <div class="callout mb-4">
+      <p class="font-semibold">Harness này đã vượt playbook ở kỷ luật bằng chứng và tính portable đa agent. Còn thiếu ở vòng đời artifact, review PR, eval agent và vòng khép kín stage Maintain.</p>
+    </div>
+    <ul class="space-y-2 text-slate-700 list-disc pl-5">
+      <li><strong>Mạnh hơn khóa học:</strong> protocol chứng cứ theo từng AC, quy tắc evidence stale, cổng review độc lập, trung thực ASSISTED, threat model, ma trận kiểm soát UPG (24 mục), adapter đa runtime.</li>
+      <li><strong>Yếu hơn khóa học:</strong> chưa có pipeline <code>intent.md → spec.md → plan.md</code> first-class, chưa có <code>REVIEW.md</code>, chưa có suite agent-evals trên CI, chưa có vòng bands/metrics tự viết intent tiếp theo.</li>
+      <li><strong>Đường tới harness mạnh nhất:</strong> hoàn tất các phase UPG còn mở, rồi import artifact chain + closed-loop của playbook thành skill/hook portable — không hy sinh authority của evidence.</li>
+    </ul>
+  </section>
+
+  <nav class="panel p-5 toc text-sm">
+    <p class="font-semibold mb-2 text-slate-800">Mục lục</p>
+    <ol class="list-decimal pl-5 space-y-1 columns-1 md:columns-2">
+      <li><a href="#framework">Framework playbook (14 bài)</a></li>
+      <li><a href="#harness">Hiện trạng harness</a></li>
+      <li><a href="#matrix">Ma trận phủ: 12 plays × harness</a></li>
+      <li><a href="#gaps">Các khoảng trống trọng yếu</a></li>
+      <li><a href="#advantages">Nơi harness đã mạnh hơn</a></li>
+      <li><a href="#roadmap">Lộ trình tới harness mạnh nhất</a></li>
+      <li><a href="#gates">Cổng quyết định còn mở</a></li>
+    </ol>
+  </nav>
+
+  <section id="framework" class="panel p-6">
+    <h2 class="text-xl font-bold mb-4">1. Framework playbook</h2>
+    <p class="text-slate-700 mb-4">AI-Native SDLC Playbook của Anthropic (14 bài, ~1 giờ) lập luận: khi agent viết phần lớn code, nút thắt dời sang plan / review / deploy. Giải pháp thay thế là <strong>vòng lặp các artifact đã commit</strong>. Mỗi stage kết thúc bằng việc ghi một file vào version control; stage kế tiếp bắt đầu bằng việc đọc file đó. Con người giữ phán đoán ở cổng (gate), không ở từng dòng code.</p>
+
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="rounded-xl border border-slate-200 p-4">
+        <h3 class="font-semibold mb-2">Luận điểm cốt lõi</h3>
+        <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
+          <li>Giai đoạn Build co lại; cổng chạy tốc độ con người thành hàng đợi thật.</li>
+          <li>Controls thiết kế cho người viết code không scale được khi agent viết phần lớn diff.</li>
+          <li>Governance phải chạy <em>trong lúc agent hành động</em> (hook), không chỉ ở review meeting.</li>
+          <li>Sự cố production ghi thành <code>intent.md</code> kế tiếp — vòng lặp tự nuôi mình.</li>
+        </ul>
+      </div>
+      <div class="rounded-xl border border-slate-200 p-4">
+        <h3 class="font-semibold mb-2">Bản đồ 6 stage</h3>
+        <ol class="text-sm text-slate-700 space-y-1 list-decimal pl-4">
+          <li><strong>Plan</strong> — capture thành <code>intent.md</code></li>
+          <li><strong>Design</strong> — requirements + design → <code>spec.md</code></li>
+          <li><strong>Build</strong> — plan mode → <code>plan.md</code>; CLAUDE.md; skills; phiên song song</li>
+          <li><strong>Test</strong> — feedback loop; continuous evals trên CI</li>
+          <li><strong>Deploy</strong> — AI review PR; hook làm gate; CI/CD + deploy qua MCP</li>
+          <li><strong>Maintain</strong> — bands / metrics → intent mới</li>
+        </ol>
+      </div>
+    </div>
+
+    <h3 class="font-semibold mb-2">Tóm tắt từng bài</h3>
+    <table class="w-full text-sm kv">
+      <thead class="bg-slate-50 text-left">
+        <tr><th class="w-28">Bài</th><th class="w-24">Stage</th><th>Play</th><th>Artifact / control chính</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1 Mở đầu</td><td>—</td><td>Nút thắt dời sang plan/review/deploy</td><td>Chuỗi artifact commit là audit trail</td></tr>
+        <tr><td>2 Capture intent</td><td>Plan</td><td>Người đề xuất brainstorm với Claude → proto-spec</td><td><code>intent.md</code> trong intent home chung</td></tr>
+        <tr><td>3 Req & design</td><td>Design</td><td>Một phiên biến intent thành requirements+design dưới skill policy</td><td><code>spec.md</code>; điểm lo ngại ghi rõ cho chủ policy</td></tr>
+        <tr><td>4 Plan mode</td><td>Build</td><td>Plan mode mặc định; thẩm vấn rủi ro; implement từ plan đã duyệt</td><td><code>plan.md</code>; auto mode khi guardrail đủ chắc</td></tr>
+        <tr><td>5 CLAUDE.md</td><td>Build</td><td>Context ngày đầu cho người mới; lỗi lặp 2 lần → ghi vào file</td><td>Bộ nhớ làm việc versioned (&lt;1 trang)</td></tr>
+        <tr><td>6 Skills</td><td>Build</td><td>Tri thức tổ chức phải áp dụng nhất quán</td><td><code>.claude/skills/*/SKILL.md</code>; skill = advisory, hook = hard</td></tr>
+        <tr><td>7 Song song + subagent</td><td>Build</td><td>Worktree cho luồng độc lập; helper có scope cho việc lặp</td><td><code>.claude/agents/*.md</code>; kỹ sư điều phối 2–3 phiên</td></tr>
+        <tr><td>8 Feedback loop</td><td>Test</td><td>Một lệnh verify; test fail-first; bảo vệ vòng lặp</td><td>Block verify trong CLAUDE.md; hook chặn sửa test</td></tr>
+        <tr><td>9 Continuous evals</td><td>Test</td><td>20–50 task thật làm agent evals; đổi config là regression</td><td><code>agent-evals.yml</code>; sự cố → eval vĩnh viễn</td></tr>
+        <tr><td>10 AI review PR</td><td>Deploy</td><td>Mọi PR có các pass review giống nhau; người phán intent/rủi ro</td><td><code>REVIEW.md</code>; xếp severity; chặn nits</td></tr>
+        <tr><td>11 Hook làm gate</td><td>Deploy</td><td>Allow / ask / block; managed settings cho tổ chức regulated</td><td><code>.claude/settings.json</code>; deny/sandbox qua MDM</td></tr>
+        <tr><td>12 CI/CD + deploy</td><td>Deploy</td><td>Claude headless trong pipeline; MCP deploy/rollback; phân tầng env</td><td>Branch protection; hook cổng production; rollback đã diễn tập</td></tr>
+        <tr><td>13 Closing loop</td><td>Maintain</td><td>Band tất định (1σ/2σ/3σ) gọi agent; viết intent kế tiếp</td><td><code>bands.yaml</code>; hàng đợi triage; Claude Tag on-call</td></tr>
+        <tr><td>14 Kết thúc</td><td>—</td><td>Bản đồ tài liệu admin/settings/sandbox/hook/skill/OTel</td><td>Thứ tự rollout nền tảng</td></tr>
+      </tbody>
+    </table>
+
+    <p class="mt-4 text-sm text-slate-600">Thứ tự phụ thuộc chính khóa học vẽ ra: CLAUDE.md / Skills / Feedback / Hooks / Plan-mode đứng độc lập → Subagents & Evals cần chúng → Req+Design cần Intent+Skills → Review PR cần Evals+Subagents → CI/CD cần Review PR+Hooks → Closing loop cần CI/CD+Intent.</p>
+  </section>
+
+  <section id="harness" class="panel p-6">
+    <h2 class="text-xl font-bold mb-4">2. Hiện trạng harness</h2>
+    <p class="text-slate-700 mb-4">Repo: <code>agent-harness</code> v0.3.0 (private). Kiến trúc đích từ plan <code>260908-2104-harness-comprehensive-upgrade</code>:</p>
+    <pre class="text-xs bg-slate-900 text-teal-100 rounded-xl p-4 overflow-x-auto mb-4">SRS / AC / NFR → task slice đã duyệt → native adapter → recorded execution
+→ evidence validation → independent review → derived gates → release decision</pre>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="rounded-xl border border-slate-200 p-4">
+        <h3 class="font-semibold mb-2">Lớp portable (mạnh)</h3>
+        <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
+          <li><code>protocol/harness-protocol.md</code> — evidence theo AC, bounded retry, cancel, memory là context không phải quyền</li>
+          <li><code>skills/requirements-spec/</code> — soạn SRS, EARS, ADR, tracking contract, validator Python</li>
+          <li><code>templates/task-spec.md</code> + <code>reviewer-prompt.md</code> — hợp đồng review clean-context</li>
+          <li><code>contracts/harness-runtime/1/*.schema.json</code> — hợp đồng thực thi</li>
+          <li><code>docs/threat-model.md</code> — ranh giới tin cậy ASSISTED trung thực</li>
+          <li>Ma trận kiểm soát UPG-01..UPG-24 (đề xuất)</li>
+        </ul>
+      </div>
+      <div class="rounded-xl border border-slate-200 p-4">
+        <h3 class="font-semibold mb-2">Runtime & adapter</h3>
+        <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4">
+          <li>Runtime TypeScript cục bộ: recorder, evaluator, store (SQLite), memory, installer</li>
+          <li>CLI <code>bin/harness.mjs</code> (doctor, record, evaluate)</li>
+          <li>Adapter: công bố capability portable + plugin host DSH</li>
+          <li>Plugin vendor DSH: MCP settings, tool-arg coerce, replay-dedup</li>
+          <li>Tổng hợp eval offline <code>evals/run.mjs</code> (không gọi model sống)</li>
+          <li>Workflow CI chạy typecheck/build/test/package — <em>không</em> đặt required checks</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <strong>Trung thực về trạng thái (từ docs):</strong> runtime là <span class="badge partial">ASSISTED</span>, không phải sandbox hệ điều hành. Review độc lập, native DSH/browser/Windows, so sánh model trả phí và việc remote required-check từ chối thật vẫn <strong>đang chờ</strong>. <code>releaseReady:false</code>. Các phase 00–08 của plan vẫn mở cho acceptance đầy đủ.
+    </div>
+  </section>
+
+  <section id="matrix" class="panel p-6">
+    <h2 class="text-xl font-bold mb-4">3. Ma trận phủ</h2>
+    <p class="text-sm text-slate-600 mb-3">Chú giải: <span class="badge strong">STRONG</span> vượt mặc định khóa học · <span class="badge ok">COVERED</span> đã có / sẵn portable · <span class="badge partial">PARTIAL</span> có nhưng chưa đủ / chưa accept · <span class="badge gap">GAP</span> thiếu · <span class="badge na">N/A</span> ngoài scope harness</p>
+    <table class="w-full text-sm kv">
+      <thead class="bg-slate-50 text-left">
+        <tr><th>Play</th><th>Control của khóa học</th><th>Harness này</th><th>Phán quyết</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-medium">Capture intent</td>
+          <td>Thư mục <code>intent/</code> + template + PO review</td>
+          <td>Template task-spec + cây plans/; chưa có skill <code>intent.md</code> hay trigger riêng</td>
+          <td><span class="badge partial">PARTIAL</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Requirements & design</td>
+          <td>Một phiên → <code>spec.md</code> dưới skill policy</td>
+          <td>Skill <code>requirements-spec</code> + SRS/EARS/ADR + validator + tracking</td>
+          <td><span class="badge strong">STRONG</span></td>
+        </tr>
+          <tr>
+          <td class="font-medium">Plan mode</td>
+          <td>Plan trước; commit <code>plan.md</code>; đồng bộ khi lệch</td>
+          <td>Quét <code>./plans/</code> bắt buộc + tiếp tục plan trùng; file phase</td>
+          <td><span class="badge ok">COVERED</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">CLAUDE.md / AGENTS.md</td>
+          <td>Context ngày đầu &lt;1 trang; lỗi→file</td>
+          <td>Loader portable cho Codex/Claude/Cursor/Grok/DSH/Gemini; AGENTS.md repo</td>
+          <td><span class="badge ok">COVERED</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Skills làm tri thức tổ chức</td>
+          <td><code>.claude/skills/</code> cho policy nhất quán</td>
+          <td><code>skills/requirements-spec</code> + source-manifest; đường cài portable</td>
+          <td><span class="badge partial">PARTIAL</span> (chỉ 1 skill đóng gói)</td>
+        </tr>
+        <tr>
+          <td class="font-medium">Phiên song song & subagent</td>
+          <td>Worktree + <code>.claude/agents/</code></td>
+          <td>Protocol giả định host parallel; chưa đóng gói thư viện subagent</td>
+          <td><span class="badge partial">PARTIAL</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Feedback loop</td>
+          <td>Một lệnh verify trong CLAUDE.md; bảo vệ test</td>
+          <td>Accuracy Protocol §4 + các loại evidence; test theo suite</td>
+          <td><span class="badge strong">STRONG</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Continuous evals trên CI</td>
+          <td>20–50 task thật; regression khi đổi config</td>
+          <td>Chỉ tổng hợp offline; chưa có workflow agent-eval sống</td>
+          <td><span class="badge gap">GAP</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">AI review PR</td>
+          <td>Các pass trong <code>REVIEW.md</code> + severity + chặn nits</td>
+          <td>Template reviewer-prompt + quy tắc clean-context; chưa có <code>REVIEW.md</code> / code-review action</td>
+          <td><span class="badge partial">PARTIAL</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Hook làm cổng duyệt</td>
+          <td>PreToolUse allow/ask/block; managed settings</td>
+          <td>Protocol mô tả gate; DSH host có thể bind authority; chưa có pack hook portable</td>
+          <td><span class="badge partial">PARTIAL</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Tích hợp CI/CD</td>
+          <td>claude-code-action, sandbox, deploy MCP, phân tầng env</td>
+          <td>Chỉ GitHub checks cục bộ; chưa có agent-trong-pipeline, chưa có deploy MCP</td>
+          <td><span class="badge gap">GAP</span></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Closing the loop</td>
+          <td><code>bands.yaml</code> 1σ/2σ/3σ → diagnose/propose → intent</td>
+          <td>Chưa có tương đương; stage Maintain chưa triển khai</td>
+          <td><span class="badge gap">GAP</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="gaps" class="panel p-6">
+    <h2 class="text-xl font-bold mb-4">4. Khoảng trống trọng yếu (xếp theo đòn bẩy)</h2>
+
+    <div class="space-y-4">
+      <article class="rounded-xl border border-red-200 p-4">
+        <div class="flex items-start gap-3">
+          <span class="badge gap mt-0.5">G1</span>
+          <div>
+            <h3 class="font-semibold">Chưa có chuỗi artifact first-class</h3>
+            <p class="text-sm text-slate-700 mt-1">Sức mạnh của playbook là vòng lặp: intent được accept thì kích hoạt design; spec được accept thì kích hoạt plan mode; plan được accept thì kích hoạt build. Harness này kỷ luật <em>evidence</em> rất tốt nhưng artifact phía trên còn phi hình thức (task-spec, plans/). Không có skill <code>intent.md</code> chuẩn + template, harness không tự kích hoạt stage kế hay đo survival/rework từ lịch sử Git.</p>
+            <p class="text-sm mt-1"><strong>Khắc phục:</strong> thêm skill portable <code>skills/capture-intent</code> + template chung; định nghĩa chuyển tiếp intent→spec→plan thành field hợp đồng; metric: độ trễ intent-commit → spec-commit.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-red-200 p-4">
+        <div class="flex items-start gap-3">
+          <span class="badge gap mt-0.5">G2</span>
+          <div>
+            <h3 class="font-semibold">Chưa có suite agent-evals trên CI</h3>
+            <p class="text-sm text-slate-700 mt-1"><code>evals/run.mjs</code> chỉ tổng hợp observation offline và đánh dấu chưa xác minh độc lập. Playbook coi thay đổi CLAUDE.md/skills/hooks là regression của code và cần suite eval sống. Đây là vòng phản hồi lớn nhất còn thiếu nếu muốn tuyên bố “harness mạnh nhất”.</p>
+            <p class="text-sm mt-1"><strong>Khắc phục:</strong> 20–50 task thật làm fixture; runner non-interactive; chặn merge config PR theo pass-rate; sự cố → eval vĩnh viễn.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-red-200 p-4">
+        <div class="flex items-start gap-3">
+          <span class="badge gap mt-0.5">G3</span>
+          <div>
+            <h3 class="font-semibold">Chưa có vòng khép kín stage Maintain</h3>
+            <p class="text-sm text-slate-700 mt-1">Không có bộ phát hiện band tất định, không có hàng đợi triage, không tự viết <code>intent.md</code> từ metric production/CI. Harness dừng ở acceptance cục bộ — không tự nuôi mình.</p>
+            <p class="text-sm mt-1"><strong>Khắc phục:</strong> schema <code>bands.yaml</code> portable + script phát hiện; 1σ log / 2σ diagnose / 3σ propose-PR-or-runbook; mọi đường ra luôn theo format intent Stage-1.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-amber-200 p-4">
+        <div class="flex items-start gap-3">
+          <span class="badge partial mt-0.5">G4</span>
+          <div>
+            <h3 class="font-semibold">Hook là chữ trong protocol, chưa phải pack portable</h3>
+            <p class="text-sm text-slate-700 mt-1">Khóa học: PreToolUse production-gate, bảo vệ file test, path được bảo vệ, chặn secret trong diff. Ở đây: authority host DSH + hook global Grok/Codex trên máy operator, nhưng chưa có pack <code>hooks/</code> ship được cho project đích. Skill advisory mà thiếu hook hard đi kèm vi phạm chính quy tắc “skill là advisory, hook là hard” của khóa học.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-amber-200 p-4">
+        <div class="flex items-start gap-3">
+          <span class="badge partial mt-0.5">G5</span>
+          <div>
+            <h3 class="font-semibold">Chưa có REVIEW.md / policy review đa pass</h3>
+            <p class="text-sm text-slate-700 mt-1">reviewer-prompt.md là reviewer một-shot phủ AC. Playbook kỳ vọng review đa pass liên tục (bug / security / compliance-vs-spec+plan) kèm rank severity, chặn nits, và vòng fix <code>@claude</code>. Thiếu phần này, review của người vẫn là nút thắt mà khóa học muốn giải.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-amber-200 p-4">
+        <div class="flex items-start gap-3">
+          <span class="badge partial mt-0.5">G6</span>
+          <div>
+            <h3 class="font-semibold">Acceptance UPG còn mở nên chưa thể gọi “mạnh nhất”</h3>
+            <p class="text-sm text-slate-700 mt-1">Plan ghi: review độc lập PENDING; một số check group NO_RESULT; releaseReady false; native DSH/Windows/browser chưa verify. Tuyên bố vượt trội so với khóa học là vô nghĩa cho tới khi UPG-01..24 có test positive+negative thật và reviewer clean-context PASS.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="advantages" class="panel p-6">
+    <h2 class="text-xl font-bold mb-4">5. Nơi harness này đã mạnh hơn</h2>
+    <table class="w-full text-sm kv">
+      <thead class="bg-slate-50 text-left">
+        <tr><th>Trục</th><th>Playbook</th><th>Harness này</th><th>Vì sao quan trọng</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-medium">Authority của evidence</td>
+          <td>Test + screenshot + log PR</td>
+          <td>Evidence theo từng AC, freshness/staleness, FAIL hiện tại thắng PASS lịch sử, cấm tự approve</td>
+          <td>Khóa học tin output phiên; harness từ chối PASS theo cảm tính</td>
+        </tr>
+        <tr>
+          <td class="font-medium">Review độc lập</td>
+          <td>Approval code-owner trên PR</td>
+          <td>Reviewer clean-context bắt buộc; timeout ≠ PASS; self-review Astra ghi nhãn không-PASS</td>
+          <td>Chắc hơn trước chấm điểm bởi cùng model</td>
+        </tr>
+        <tr>
+          <td class="font-medium">Portable đa runtime</td>
+          <td>Lấy Claude Code làm trung tâm</td>
+          <td>AGENTS.md + skill cho Codex/Claude/Cursor/Grok/DSH/Gemini; công bố capability trung thực</td>
+          <td>Chạy được trên đội agent đa môi trường thật của máy này</td>
+        </tr>
+        <tr>
+          <td class="font-medium">Kỹ nghệ requirements</td>
+          <td>Phác thảo intent + spec</td>
+          <td>Skill SRS đầy đủ: EARS, NFR, ADR, tracking contract, validator cấu trúc Python</td>
+          <td>Audit trail cấp regulated mà khóa học chỉ phác</td>
+        </tr>
+        <tr>
+          <td class="font-medium">Trung thực threat model</td>
+          <td>Managed-settings sandbox enterprise</td>
+          <td>Ranh giới ASSISTED được ghi rõ; cùng user vẫn sửa được verifier</td>
+          <td>Không tuyên bố ENFORCED giả — vệ sinh niềm tin tốt hơn</td>
+        </tr>
+        <tr>
+          <td class="font-medium">Ma trận kiểm soát</td>
+          <td>Ẩn trong các play</td>
+          <td>UPG-01..24 control pass/frip tường minh</td>
+          <td>Acceptance kiểm thử được thay vì văn xuôi</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="mt-3 text-sm text-slate-600 callout">Đừng đánh đổi sức mạnh này lấy nghi thức giống khóa học. Hãy import <em>vòng lặp và các stage</em> của playbook; giữ authority evidence của harness làm xương sống.</p>
+  </section>
+
+  <section id="roadmap" class="panel p-6">
+    <h2 class="text-xl font-bold mb-4">6. Lộ trình tới harness mạnh nhất</h2>
+    <p class="text-sm text-slate-600 mb-4">Xếp theo đòn bẩy × phụ thuộc, khớp các phase plan hiện có. Mục đánh dấu ★ là import từ playbook; mục còn lại hoàn tất công việc UPG đang mở.</p>
+
+    <div class="space-y-3">
+      <div class="rounded-xl border border-teal-200 bg-teal-50/40 p-4">
+        <h3 class="font-semibold">Ngay bây giờ — đóng lõi UPG còn mở (plan phase 00–04)</h3>
+        <ol class="text-sm text-slate-700 list-decimal pl-5 mt-2 space-y-1">
+          <li>Baseline + containment regression; hoàn tất suite typecheck/core/operations với log hiện tại.</li>
+          <li>Schema + evaluator: từ chối empty/zero/skip/cancel thành PASS; quy tắc evidence stale.</li>
+          <li>Evidence producer + đường review độc lập thật (không phải worker tự nhãn).</li>
+          <li>Lifecycle: cancel, crash recovery, không blind retry sau timeout mơ hồ.</li>
+        </ol>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 p-4">
+        <h3 class="font-semibold">Tiếp theo — các stage playbook thành skill portable ★</h3>
+        <ol class="text-sm text-slate-700 list-decimal pl-5 mt-2 space-y-1">
+          <li><strong>★ Pack chuỗi artifact:</strong> <code>skills/capture-intent</code> + nối <code>skills/requirements-spec</code> + <code>skills/plan-mode</code> commit <code>plan.md</code> và buộc đồng bộ plan↔diff.</li>
+          <li><strong>★ Skill REVIEW.md:</strong> policy đa pass (bug/security/compliance-vs-spec+plan), Important vs Nit, chặn số nit, bỏ path generated.</li>
+          <li><strong>★ Pack hooks:</strong> ví dụ PreToolUse portable — path được bảo vệ, bảo vệ sửa file test khi fix, chặn secret trong diff, production-deploy ask/block với thông báo exit-2.</li>
+          <li><strong>★ Thư viện subagent:</strong> verifier / researcher / simplifier dưới <code>.claude/agents/</code> + bản portable.</li>
+        </ol>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 p-4">
+        <h3 class="font-semibold">Sau đó — khép vòng ★</h3>
+        <ol class="text-sm text-slate-700 list-decimal pl-5 mt-2 space-y-1">
+          <li><strong>★ Agent evals trên CI:</strong> suite task thật; chạy khi PR chạm CLAUDE.md/skills/hooks + hằng đêm; chặn merge theo pass-rate.</li>
+          <li><strong>★ bands.yaml + detector:</strong> bắt đầu bằng tỷ lệ test-failure CI và thời gian vòng đời PR; tier log/diagnose/propose.</li>
+          <li><strong>★ Intent writer từ bands:</strong> mọi đường propose 3σ phát <code>intent.md</code> Stage-1 để Maintain nuôi Plan.</li>
+          <li><strong>★ Bước judgment trong CI:</strong> <code>claude -p</code> triage khi build fail; nháp changelog; mọi ghi đều là PR.</li>
+        </ol>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 p-4">
+        <h3 class="font-semibold">Cuối cùng — quan sát, đừng tuyên bố (plan phase 07–08)</h3>
+        <ol class="text-sm text-slate-700 list-decimal pl-5 mt-2 space-y-1">
+          <li>Đo các chỉ số leading/lagging playbook định nghĩa (độ trễ intent→spec, first-pass CI, thời gian review, pass-rate eval, breach→intent).</li>
+          <li>Reviewer độc lập PASS + quan sát required-check từ chối thật trước khi dùng chữ ENFORCED hay “mạnh nhất”.</li>
+          <li>Phân phối private cho tới khi license/source-manifest xử lý xong; canary → opt-in → default.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-xl bg-slate-900 text-slate-100 p-5">
+      <h3 class="font-semibold mb-2 text-teal-300">Trạng thái đích (một câu)</h3>
+      <p class="text-sm leading-relaxed">Một harness portable, đa runtime, nơi mọi thay đổi đi qua <code>intent → spec → plan → implementation → evidence → independent review → merge có gate</code>, thay đổi config agent bị chặn bởi eval, hook ép policy hard, band production viết lại intent kế tiếp — và mọi PASS đều dựa trên evidence hiện tại chứ không phải tự khai.</p>
+    </div>
+  </section>
+
+  <section id="gates" class="panel p-6">
+    <h2 class="text-xl font-bold mb-4">7. Cổng quyết định còn mở</h2>
+    <table class="w-full text-sm kv">
+      <thead class="bg-slate-50 text-left">
+        <tr><th>Quyết định</th><th>Đề xuất</th><th>Chặn gì</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Chuỗi artifact thành first-class?</td><td>Thêm skill intent/plan-mode + template; giữ plans/ làm work source</td><td>Mục lộ trình G1</td></tr>
+        <tr><td>Ngân sách agent evals sống</td><td>Bắt đầu fixture offline + một job CI non-interactive; mở rộng trial trả phí sau ADR</td><td>G2; phase 07</td></tr>
+        <tr><td>Trust profile cho vòng khép kín</td><td>ASSISTED cho tới khi chứng minh được isolation producer/reviewer/control</td><td>Tuyên bố tự trị stage Maintain</td></tr>
+        <tr><td>CI/CD + deploy MCP</td><td>Triage read-only trước; bước ghi sau branch protection; production luôn do người ủy quyền</td><td>Tự động hóa deploy</td></tr>
+        <tr><td>Chỉ định review độc lập</td><td>Reviewer được nêu tên + model khác khi có thể; không bao giờ worker-kiêm-reviewer</td><td>UPG-10; release</td></tr>
+        <tr><td>Phân phối</td><td>Private cho tới khi source-manifest/license xử lý xong</td><td>Publish công khai</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel p-6">
+    <h2 class="text-xl font-bold mb-3">Nguồn & bằng chứng</h2>
+    <ul class="text-sm text-slate-700 space-y-1 list-disc pl-5">
+      <li>Khóa học: <code>https://academy.claude.com/courses/ai-native-sdlc-playbook</code> (đã fetch đủ 14 trang bài ngày 2026-09-10).</li>
+      <li>Plan: <code>plans/260908-2104-harness-comprehensive-upgrade/plan.md</code>, <code>reports/control-matrix.md</code>, <code>reports/current-progress.md</code>.</li>
+      <li>Codebase: README, protocol, docs/implementation-status.md, docs/evaluation-method.md, docs/AGENTS.md, adapters/portable, package.json, workflow CI.</li>
+      <li>Báo cáo này chỉ là phân tích — không phải acceptance sản phẩm, không phải PASS của control UPG, không phải tuyên bố release.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="bg-slate-900 text-slate-400 text-xs">
+  <div class="mx-auto max-w-5xl px-6 py-6 flex flex-wrap gap-3 justify-between">
+    <span>Agent Harness · gap analysis · phát triển private</span>
+    <span>work source: plans/260908-2104-harness-comprehensive-upgrade</span>
+  </div>
+</footer>
+</body>
+</html>

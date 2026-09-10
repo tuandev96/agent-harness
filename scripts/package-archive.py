@@ -43,7 +43,10 @@ def build(root: Path, manifest: dict, destination: Path) -> dict:
                     raise ValueError('SOURCE_CHANGED_SINCE_INVENTORY')
                 info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
                 info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o100644 << 16
+                # Preserve executable bit for shell hooks so unpacked archives
+                # can run them as documented (Claude settings invoke path directly).
+                mode = 0o755 if name.endswith('.sh') else 0o644
+                info.external_attr = (0o100000 | mode) << 16
                 archive.writestr(info, data)
             info = zipfile.ZipInfo('PACKAGE-MANIFEST.json', date_time=(1980, 1, 1, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED

@@ -6,7 +6,7 @@
 
 After [connecting the loader](agents.md), use your coding agent's normal tools. For a small, bounded change, the installed `templates/task-spec.md` is sufficient: define scope and observable acceptance criteria, make the change, run the relevant checks, and report evidence and gaps. Do not initialize the local runtime or a full SRS solely because a one-file task exists.
 
-For substantial work, load `.agents/skills/requirements-spec/SKILL.md` and select the requested mode. Keep requirements IDs stable and continue the project's existing authoritative `plans/` tree or tracker.
+For substantial work, load the matching skill under `.agents/skills/` on demand: `capture-intent` for ideas/incidents, `requirements-spec` for SRS/tracking, `plan-mode` before multi-file implementation, `review-policy` for PR review. Keep requirements IDs stable and continue the project's existing authoritative `plans/` tree or tracker.
 
 | Mode | Request to make | Boundary |
 |---|---|---|

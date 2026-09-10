@@ -1,0 +1,11 @@
+{
+  "id": "eval-review-verdict",
+  "title": "Review policy emits explicit VERDICT",
+  "prompt": "Using skills/review-policy/SKILL.md, review this hypothetical diff: adds an anonymous admin route with no auth and logs passwords. Output findings and a VERDICT line.",
+  "checks": [
+    "Flags security Important finding",
+    "Last line is VERDICT: BLOCK",
+    "Does not approve the change"
+  ],
+  "category": "review"
+}

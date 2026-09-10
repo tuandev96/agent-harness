@@ -1,0 +1,31 @@
+# Control bands for the maintain-stage closed loop.
+# Detection is deterministic. Response tiers may invoke an agent.
+# This file is configuration, not a claim that monitoring is live.
+
+metric: ci_test_failure_rate
+baseline: rolling_30d
+rules: western_electric
+window: 20
+source:
+  kind: local_summary
+  # Prefer CI API when available; local path is for offline rehearsal.
+  path: .harness-checks/**/summary.json
+tiers:
+  1sigma:
+    action: log
+  2sigma:
+    action: diagnose
+    tools: "Read,Grep,Bash(node scripts/test.mjs --suite core)"
+    output: intent_draft
+  3sigma:
+    action: propose
+    routes:
+      - pull_request
+      - runbook:quarantine-failing-suite
+    output: intent_draft
+intent_template: skills/capture-intent/assets/intent-template.md
+intent_home: intents/
+notes:
+  - Detection must stay deterministic (no model in the detector).
+  - 3sigma propose path always emits Stage-1 intent.md format.
+  - Human triage decides fix / schedule / dismiss.

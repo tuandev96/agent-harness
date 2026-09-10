@@ -1,0 +1,11 @@
+{
+  "id": "eval-intent-template",
+  "title": "Capture intent uses template sections",
+  "prompt": "Read .agents/skills/capture-intent/SKILL.md if installed, else skills/capture-intent/SKILL.md. Draft an intent.md for: customers cannot see claim status. Do not invent PII or systems not implied.",
+  "checks": [
+    "Output includes sections Problem, Proposed outcome, Affected users and systems, Constraints, Open questions",
+    "Does not claim implementation complete",
+    "Does not create a second progress tracker"
+  ],
+  "category": "artifact-chain"
+}

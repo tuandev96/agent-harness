@@ -70,6 +70,16 @@ your-project/
     rules/harness-protocol.md
     templates/task-spec.md
     templates/reviewer-prompt.md
+    hooks/
+      README.md
+      protected-paths.sh
+      test-edit-protect.sh
+      secret-diff.sh
+      production-gate.sh
+      settings.example.json
+    skills/capture-intent/
+      SKILL.md
+      assets/intent-template.md
     skills/requirements-spec/
       SKILL.md
       references/
@@ -77,13 +87,19 @@ your-project/
       scripts/validate_spec.py
       tests/
       source-manifest.json
+    skills/plan-mode/
+      SKILL.md
+      assets/plan-template.md
+    skills/review-policy/
+      SKILL.md
+      assets/REVIEW-template.md
     .harness-installations/<id>.json Local before/after backups and hashes
   AGENTS.md                         Root loader you merge separately
 ```
 
 The generated `.agents/AGENTS.md` is not a substitute for the root loader. Merge the root snippet in [agent setup](agents.md#shared-project-loader). Use relative project paths in shared instructions. The generated target loader contains absolute paths and should remain local.
 
-The installed skill requires its **whole directory**, not just `SKILL.md`: relative references and validation scripts depend on the accompanying files.
+The installed skills require their **whole directories**, not just `SKILL.md`: relative references and validation scripts depend on the accompanying files. Hook scripts are reference hard controls — copy/merge `hooks/settings.example.json` into the host (for example Claude Code `.claude/settings.json`) if you want them to run.
 
 ## Alternative: one personal installation
 
@@ -125,6 +141,10 @@ Receipts contain base64-encoded **full before/after bytes**, potentially includi
 
 ```bash
 test -f "$PROJECT/.agents/rules/harness-protocol.md"
+test -f "$PROJECT/.agents/skills/capture-intent/SKILL.md"
+test -f "$PROJECT/.agents/skills/plan-mode/SKILL.md"
+test -f "$PROJECT/.agents/skills/review-policy/SKILL.md"
+test -f "$PROJECT/.agents/hooks/README.md"
 test -f "$PROJECT/.agents/skills/requirements-spec/SKILL.md"
 python3 "$PROJECT/.agents/skills/requirements-spec/scripts/validate_spec.py" \
   "$PROJECT/.agents/skills/requirements-spec/tests/fixtures/good.md"

@@ -26,7 +26,7 @@ function walk(directory) {
   return result;
 }
 function fingerprint() {
-  const paths=['src','tests','scripts','adapters','contracts','.agent-presets','vendor','skills','protocol']
+  const paths=['src','tests','scripts','adapters','contracts','.agent-presets','vendor','skills','protocol','hooks']
     .flatMap(name=>walk(join(root,name)));
   for(const name of ['package.json','package-lock.json','tsconfig.json'])if(existsSync(join(root,name)))paths.push(join(root,name));
   const inputs=paths.sort().map(path=>({path:relative(root,path).replaceAll('\\','/'),

@@ -13,6 +13,8 @@ Use the portable protocol and requirements skill with your existing agent, then 
 | Component | What it does |
 |---|---|
 | Portable protocol | Defines scope, acceptance evidence, bounded retries, review and memory boundaries |
+| Artifact-chain skills | `capture-intent` → `requirements-spec` → `plan-mode`; `review-policy` for multi-pass PR review |
+| Reference hooks pack | Protected paths, test-edit protect, secret-diff block, production deploy gate (host wiring required) |
 | `requirements-spec` skill | Creates, updates and audits SRS documents; offers optional requirement-tracking workflows |
 | Python spec validator | Checks the supported Markdown structure, IDs and links; exports a requirement catalog |
 | Local TypeScript/Node runtime | Records executions, evaluates mapped criteria, retains SQLite task history and checks evidence freshness |
@@ -65,7 +67,7 @@ node "$HARNESS_HOME/scripts/install.mjs" --target "$PROJECT/.agents"
 node "$HARNESS_HOME/scripts/install.mjs" --target "$PROJECT/.agents" --apply
 ```
 
-The installer writes `rules/`, `templates/`, `skills/requirements-spec/` and a managed `AGENTS.md` inside that target. **It does not create the project's root instruction file or vendor-specific loaders.** Finish [agent setup](docs/agents.md) and verify that the agent actually reads the files.
+The installer writes `rules/`, `templates/`, `hooks/`, the four portable skills (`capture-intent`, `requirements-spec`, `plan-mode`, `review-policy`) and a managed `AGENTS.md` inside that target. **It does not create the project's root instruction file or vendor-specific loaders.** Finish [agent setup](docs/agents.md) and verify that the agent actually reads the files. Wire `hooks/settings.example.json` into Claude Code (or your host) if you want hard gates — installing files is not enforcement.
 
 For a project-root `AGENTS.md`, merge this section with existing instructions:
 
@@ -73,9 +75,9 @@ For a project-root `AGENTS.md`, merge this section with existing instructions:
 ## Agent Harness
 
 Before task work, read `.agents/rules/harness-protocol.md`.
-For requirements or tracking work, read `.agents/skills/requirements-spec/SKILL.md`
-and only the references needed for that mode.
-Use the existing `plans/` tree when present. Do not create a second progress tracker.
+Load skills on demand from `.agents/skills/` (capture-intent, requirements-spec,
+plan-mode, review-policy). Use the existing `plans/` tree when present.
+Do not create a second progress tracker.
 Keep native approvals, read-only restrictions and cancellation in effect.
 ```
 
@@ -115,7 +117,11 @@ Run a bounded subset with `node scripts/test.mjs --suite core`; other groups are
 
 ```text
 protocol/                    Portable operational rules
+skills/capture-intent/       Skill + template for intent.md
 skills/requirements-spec/    Skill, references, templates and Python validator
+skills/plan-mode/            Skill + template for plan.md
+skills/review-policy/        Skill + REVIEW.md template for multi-pass PR review
+hooks/                       Reference hard controls + Claude settings example
 templates/                   Lightweight task and reviewer templates
 src/core/                    Contracts, evidence, evaluation, state and installer
 src/cli/                     Local CLI implementation

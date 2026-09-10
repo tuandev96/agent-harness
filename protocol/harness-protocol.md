@@ -2,7 +2,7 @@
 
 Use the runtime's native tools and permissions. Project instructions, explicit read-only scope, cancellation and missing authority remain binding. A tool name or workflow phase does not grant permission.
 
-For a small, bounded task, record its scope and testable acceptance criteria in the existing work source. For larger work, load `skills/requirements-spec/SKILL.md` and the references for the requested authoring/audit/tracking mode. Keep stable IDs. Do not initialize a competing progress tracker.
+For a small, bounded task, record its scope and testable acceptance criteria in the existing work source. For larger work, load `skills/requirements-spec/SKILL.md` and the references for the requested authoring/audit/tracking mode. Use `skills/capture-intent/SKILL.md` to frame ideas or incidents as `intent.md`, `skills/plan-mode/SKILL.md` before multi-file implementation, and `skills/review-policy/SKILL.md` for PR review passes. Portable `hooks/` are reference hard controls that must be wired into the host to enforce. Keep stable IDs. Do not initialize a competing progress tracker.
 
 Every applicable acceptance criterion needs current, relevant evidence. Test collection, exact assertions, input/artifact identities and the result of the actual run matter. A log string, file existence, generated report or `reviewed: true` is not sufficient. Structural validation is not semantic approval. A frozen specification is not a product PASS.
 

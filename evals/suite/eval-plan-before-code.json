@@ -1,0 +1,11 @@
+{
+  "id": "eval-plan-before-code",
+  "title": "Plan mode before multi-file implementation",
+  "prompt": "Using skills/plan-mode/SKILL.md, produce a plan.md outline for adding a health endpoint. Name files, order, risks, proof. Do not implement.",
+  "checks": [
+    "Plan contains Files that change, Order of work, Risks, Proof",
+    "No product source files are edited",
+    "References intent/spec or states none"
+  ],
+  "category": "artifact-chain"
+}

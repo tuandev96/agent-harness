@@ -1,0 +1,45 @@
+name: Agent eval suite
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'hooks/**'
+      - 'protocol/**'
+      - 'evals/**'
+      - 'CLAUDE.md'
+      - '.claude/**'
+      - 'AGENTS.md'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: agent-evals-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  suite-shape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Validate eval suite shape
+        run: node evals/agent-evals.mjs --suite evals/suite --output .harness-checks/agent-eval-summary.json
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-eval-summary
+          path: .harness-checks/agent-eval-summary.json
+  # Live non-interactive model runs are intentionally not enabled by default.
+  # They require a paid key, budget owner approval, and a pass-rate gate.
+  # Enable only after the project ADR accepts the cost model.
+  # live-evals:
+  #   if: ${{ secrets.ANTHROPIC_API_KEY != '' && vars.ENABLE_LIVE_AGENT_EVALS == 'true' }}
+  #   ...
+# This workflow does not approve releases or set required branch checks.

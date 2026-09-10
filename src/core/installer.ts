@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, lstatSync, mkdirSync, openSync, writeFileSync, closeSync, unlinkSync, realpathSync } from 'node:fs';
+import { chmodSync, existsSync, readFileSync, readdirSync, lstatSync, mkdirSync, openSync, writeFileSync, closeSync, unlinkSync, realpathSync } from 'node:fs';
 import { join, dirname, resolve, relative } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { atomicWrite, sha256, safePath } from './files.js';
@@ -22,6 +22,7 @@ function portableFiles(root: string, prefix: string): string[] {
     return entry.isDirectory() ? portableFiles(root, path) : /\.(?:md|json|py|sh|yml)$/.test(path) ? [path] : [];
   });
 }
+const SKILL_PREFIXES = ['skills/requirements-spec', 'skills/capture-intent', 'skills/plan-mode', 'skills/review-policy'] as const;
 function receipts(root: string): Receipt[] {
   const path = targetPath(root, '.harness-installations');
   if (!existsSync(path)) return [];
@@ -35,7 +36,12 @@ export function planInstall(source: string, destination: string): InstallPlan {
   const root = realpathSync(source), target = realpathSync(destination);
   if (root === target) throw new Error('SOURCE_IS_NOT_INSTALL_TARGET');
   const sourceVersion = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version as string;
-  const files = ['protocol/harness-protocol.md', ...portableFiles(root, 'templates'), ...portableFiles(root, 'skills/requirements-spec')].sort();
+  const files = [
+    'protocol/harness-protocol.md',
+    ...portableFiles(root, 'templates'),
+    ...portableFiles(root, 'hooks'),
+    ...SKILL_PREFIXES.flatMap(prefix => portableFiles(root, prefix)),
+  ].sort();
   const history = receipts(target).filter(r => r.status === 'COMPLETED');
   const entries: Entry[] = files.map(file => {
     const path = file === 'protocol/harness-protocol.md' ? 'rules/harness-protocol.md' : file;
@@ -48,7 +54,7 @@ export function planInstall(source: string, destination: string): InstallPlan {
   const path = 'AGENTS.md', before = currentBytes(targetPath(target, path)), text = before?.toString('utf8') ?? '';
   const starts = text.split(START).length - 1, ends = text.split(END).length - 1;
   if (starts !== ends || starts > 1 || starts === 1 && text.indexOf(START) > text.indexOf(END)) throw new Error('MANAGED_BLOCK_MALFORMED');
-  const block = `${START}\nRead \`${join(target, 'rules/harness-protocol.md')}\` before task work. Load \`${join(target, 'skills/requirements-spec/SKILL.md')}\` only for relevant requirements/tracking tasks.\n${END}`;
+  const block = `${START}\nRead \`${join(target, 'rules/harness-protocol.md')}\` before task work.\nLoad skills on demand: \`${join(target, 'skills/capture-intent/SKILL.md')}\` (intent), \`${join(target, 'skills/requirements-spec/SKILL.md')}\` (SRS/tracking), \`${join(target, 'skills/plan-mode/SKILL.md')}\` (plan.md), \`${join(target, 'skills/review-policy/SKILL.md')}\` (PR review).\nHooks under \`${join(target, 'hooks/')}\` are reference hard controls; wire them into the host settings.\n${END}`;
   const updated = starts ? text.slice(0, text.indexOf(START)) + block + text.slice(text.indexOf(END) + END.length) : text + (text && !text.endsWith('\n') ? '\n' : '') + '\n' + block + '\n';
   const data = Buffer.from(updated);
   const existingBlock = starts ? text.slice(text.indexOf(START), text.indexOf(END) + END.length) : null;
@@ -80,7 +86,12 @@ export function install(plan: InstallPlan, options: { afterWrite?: (path: string
     for (const entry of plan.entries) {
       const path = targetPath(plan.target, entry.path), current = currentBytes(path);
       if ((current ? sha256(current) : null) !== entry.beforeHash) throw new Error('TARGET_CHANGED_DURING_INSTALL');
-      if (entry.beforeHash !== entry.afterHash) { atomicWrite(path, Buffer.from(entry.after, 'base64')); changed++; options.afterWrite?.(entry.path); }
+      if (entry.beforeHash !== entry.afterHash) {
+        atomicWrite(path, Buffer.from(entry.after, 'base64'));
+        if (path.endsWith('.sh') && process.platform !== 'win32') chmodSync(path, 0o755);
+        changed++;
+        options.afterWrite?.(entry.path);
+      }
     }
     record.status = 'COMPLETED'; atomicWrite(receipt, JSON.stringify(record, null, 2)); return { receipt, changed };
   } finally { release(); }

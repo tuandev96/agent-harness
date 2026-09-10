@@ -102,7 +102,9 @@ Self-test gốc: exit 0, good fixture được chấp nhận và 15 lớp lỗi 
 
 - [x] Kiểm tra nguồn, đánh giá skill và viết plan.
 - [ ] Chủ dự án chốt scope/ADR của slice triển khai đầu tiên.
-- [ ] Phase 00–08: chưa thực hiện.
+- [ ] Phase 00–08: chưa thực hiện đầy đủ.
+- [x] Slice portable artifact-chain (2026-09-10): skills + hooks + installer. Independent review PASS (Codex gpt-5.5 + Cursor grok-4.6).
+- [x] Slice host/evals/bands/UPG-subset (2026-09-10): `.claude/settings.json` wired; host-hook observation 11/11 script-level; Claude live session API 402 NOT_OBSERVED; agent-eval suite (5 fixtures) + CI shape job; bands.yaml + detector writing intent at 3σ; UPG subset tests in operations. Full `npm test` PASS. UPG-01..24 full matrix still NOT_ASSESSED. releaseReady false.
 - [ ] Independent review: PENDING.
 - [ ] Runtime / merge / release acceptance: NOT_ASSESSED trong task này.
 

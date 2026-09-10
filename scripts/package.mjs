@@ -9,7 +9,7 @@ const args=process.argv.slice(2);
 if(!(args.length===1&&args[0]==='--check')&&!(args.length===2&&args[0]==='--out')) {
  console.error('Usage: node scripts/package.mjs --check | --out private-package.zip');process.exit(2);
 }
-const roots=['src','dist','bin','scripts','adapters','contracts','skills','protocol','templates','docs','evals','tests','.agent-presets',
+const roots=['src','dist','bin','scripts','adapters','contracts','skills','protocol','templates','hooks','docs','evals','tests','.agent-presets',
  'vendor/dsh-mcp-settings','vendor/dsh-tool-arg-coerce','vendor/dsh-replay-dedup'];
 const exclude=new Set(['node_modules','__pycache__','.git','.harness','.harness-checks','sessions','attachments','storages','screenshots']);
 const sensitiveName=/^(?:\.env(?:\..*)?|\.credentials.*|settings\.yaml(?:\..*)?|mcp-servers\.json|tokens\.json|guardian-ledger\.jsonl)$/i;
@@ -41,7 +41,7 @@ for(const name of roots)walk(join(root,name));
 for(const name of ['package.json','package-lock.json','tsconfig.json','README.md','CHANGELOG.md','LICENSE'])if(existsSync(join(root,name)))add(join(root,name));
 inventory.sort((a,b)=>a.path.localeCompare(b.path));
 if(new Set(inventory.map(item=>item.path)).size!==inventory.length)throw new Error('DUPLICATE_PACKAGE_PATH');
-for(const name of ['bin/harness.mjs','dist/core/service.js','dist/cli/main.js','skills/requirements-spec/SKILL.md']) {
+for(const name of ['bin/harness.mjs','dist/core/service.js','dist/cli/main.js','skills/requirements-spec/SKILL.md','skills/capture-intent/SKILL.md','skills/plan-mode/SKILL.md','skills/review-policy/SKILL.md','hooks/README.md']) {
  if(!inventory.some(item=>item.path===name))throw new Error('BUILD_OR_SOURCE_MISSING: '+name);
 }
 const manifest={format:'harness-private-package/1',distribution:'PRIVATE_ONLY',releaseReady:false,

@@ -4,16 +4,16 @@
 
 These recipes connect **portable instructions and skills** to existing clients. They do not install host-enforced permissions or certify native conformance. They were checked against the linked primary documentation on **2026-09-09**; no paid native-agent session is implied by that documentation review.
 
-Assume the project-local installation from [installation](installation.md): `$PROJECT/.agents/` contains `rules/`, `templates/` and `skills/requirements-spec/`. Use the personal-installation section instead when the bundle is in your home directory.
+Assume the project-local installation from [installation](installation.md): `$PROJECT/.agents/` contains `rules/`, `templates/`, `hooks/` and skills under `.agents/skills/` (`capture-intent`, `requirements-spec`, `plan-mode`, `review-policy`). Use the personal-installation section instead when the bundle is in your home directory.
 
 ## Compatibility at a glance
 
 | Client | Instruction entrypoint used in this guide | Skill exposure | Runtime integration in this repo |
 |---|---|---|---|
-| Codex | Project `AGENTS.md` | `.agents/skills/requirements-spec/` | Portable workflow + optional local CLI; no dedicated native enforcement adapter |
-| Claude Code | Project `CLAUDE.md` importing `AGENTS.md` | Explicit file read, optionally `.claude/skills/requirements-spec/` | Portable workflow + optional local CLI |
-| Cursor | Project `AGENTS.md`, or a project `.mdc` rule | `.agents/skills/requirements-spec/` | Portable workflow + optional local CLI |
-| Grok Build | Project `AGENTS.md` | Explicit file read, optionally `.grok/skills/requirements-spec/` | Portable workflow + optional local CLI |
+| Codex | Project `AGENTS.md` | `.agents/skills/*` (capture-intent, requirements-spec, plan-mode, review-policy) | Portable workflow + optional local CLI; no dedicated native enforcement adapter |
+| Claude Code | Project `CLAUDE.md` importing `AGENTS.md` | Explicit file read, optionally vendor skill dirs; hooks via `.claude/settings.json` | Portable workflow + optional local CLI + reference hooks |
+| Cursor | Project `AGENTS.md`, or a project `.mdc` rule | `.agents/skills/*` | Portable workflow + optional local CLI |
+| Grok Build | Project `AGENTS.md` | Explicit file read, optionally `.grok/skills/*` | Portable workflow + optional local CLI |
 | DSH | The instruction loader of your DSH deployment | Explicit file read or deployment skill loader | Host plugin exists; authority and task binding must be integrated |
 | Gemini CLI | Project `GEMINI.md` | Explicit file read | Manual recipe only; not in the implemented runtime capability registry |
 
@@ -27,10 +27,14 @@ The first five runtime labels are described in [`adapters/portable/index.mjs`](.
 ## Agent Harness
 
 Before task work, read `.agents/rules/harness-protocol.md`.
-For requirements or tracking work, read `.agents/skills/requirements-spec/SKILL.md`
-and only the references needed for that mode.
+Load skills on demand from `.agents/skills/`:
+- `capture-intent` — frame ideas/incidents as `intent.md`
+- `requirements-spec` — SRS / tracking only when needed
+- `plan-mode` — multi-file implementation plans
+- `review-policy` — multi-pass PR review
 Use the existing `plans/` tree when present. Do not create a second progress tracker.
 Keep native approvals, read-only restrictions and cancellation in effect.
+Optional hard gates: wire `.agents/hooks/settings.example.json` into Claude Code.
 ```
 
 A path mentioned in instructions is not evidence that its contents were loaded. Run the [loading check](#verify-loading). Use the project's native permission flow if the file cannot be read; do not disable the sandbox or replace the system prompt to make it accessible.
